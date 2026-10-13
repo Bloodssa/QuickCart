@@ -13,6 +13,7 @@ import bestSellerImage from "../assets/images/hero/best-seller.jpg"
 import newArrivalImage from "../assets/images/hero/new-arrival.jpg"
 import earbuds from "../assets/images/category/Wireless Earbuds Pro.jpg"
 import runningshoes from "../assets/images/category/Running Shoes.jpg"
+import laptop from "../assets/images/category/Laptop.jpg"
 
 
 // category
@@ -112,7 +113,7 @@ const HomePage = () => {
             name: "Laptop 14-inch Intel Core i5",
             category: "Electronics",
             price: 24990,
-            imageUrl: "/images/laptop.png",
+            imageUrl: laptop,
             rating: 4.8,
             reviewCount: 203,
             stockQuantity: 8,
