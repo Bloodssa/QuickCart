@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import AuthShell from "../components/AuthForm";
 import FormField from "../components/FormField";
 import { useAuth } from "../hooks/useAuth";
 import { getErrorMessage } from "../lib/api";
 
-const Login = () => {
-    const { navigate } = useNavigate();
+export default function Login() {
     const { login } = useAuth();
     const location = useLocation();
     const [error, setError] = useState(null);
@@ -17,54 +17,55 @@ const Login = () => {
 
         setError(null);
         setSubmitting(true);
-
         try {
-            await login({ username: form.get("username"), password: form.get("password") }); // send through axios from login useAuth
-
-            const destination = location.state?.from?.pathname || "/home";
-
-            navigate(destination, { replace: true });
-        } catch (e) {
-            setError(getErrorMessage(e));
+            await login({ username: form.get("username").trim(), password: form.get("password") });
+        } catch (err) {
+            setError(getErrorMessage(err));
         } finally {
             setSubmitting(false);
         }
     }
 
     return (
-        <>
-            <title>Login</title>
-
-            <form onSubmit={handleSubmit} className="mx-auto max-w-sm space-y-4">
-                <h1 className="text-2xl font-bold">Log in</h1>
-
+        <AuthShell
+            title="Welcome back"
+            subtitle="Log in to continue shopping."
+            footer={
+                <>
+                    Dont have an account?  
+                    <Link to="/register" className="font-semibold text-heading hover:text-accent-100">
+                        Register here
+                    </Link>
+                </>
+            }
+        >
+            <form onSubmit={handleSubmit} className="space-y-5">
                 {location.state?.registered && (
-                    <p>
-                        Account created. Please login.
+                    <p role="status" className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
+                        Account created. Please log in.
                     </p>
                 )}
-
-                <FormField label="Username" id="username" autoComplete="username" required />
-                <FormField label="Password" id="password" type="password" autoComplete="current-password" required />
-
+                <FormField label="Username" id="username" placeholder="jdoe" autoComplete="username" autoFocus required />
+                <FormField
+                    label="Password"
+                    id="password"
+                    type="password"
+                    placeholder="********"
+                    autoComplete="current-password"
+                    required
+                />
                 {error && (
-                    <p role="alert" className="text-sm text-red-500">
+                    <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
                         {error}
                     </p>
                 )}
-
-                <button disabled={submitting} className="w-full rounded bg-accent-100 hover:bg-accent-hover transition-colors duration-200 ease-in py-2 text-white disabled:opacity-50">
-                    {submitting ? "Logging in..." : "Log in"}
+                <button
+                    disabled={submitting}
+                    className="h-12 w-full rounded-md bg-accent-100 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
+                >
+                    {submitting ? "Logging in…" : "Log in"}
                 </button>
-                <p>
-                    No Account yet?{" "}
-                    <Link to="/register" className="underline">
-                        Register
-                    </Link>
-                </p>
             </form>
-        </>
+        </AuthShell>
     );
 }
-
-export default Login;

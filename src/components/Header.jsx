@@ -18,7 +18,7 @@ const Header = () => {
             <header className="relative z-50 w-full border-b border-gray-300 bg-white">
                 <div className="container mx-auto flex items-center justify-between px-4 py-2 md:px-8 md:py-4">
                     <div className="flex-4 flex gap-10 items-center">
-                        <Link href="/" className="font-sans font-extrabold text-lg md:text-2xl text-neutral-900 shrink-0"><span className="text-accent-300">Quick</span>Cart</Link>
+                        <Link to="/" className="font-sans font-extrabold text-lg md:text-2xl text-neutral-900 shrink-0"><span className="text-accent-300">Quick</span>Cart</Link>
 
                         {/* Desktop Input serach */}
                         <div className="hidden md:flex relative items-center w-full max-w-xl">

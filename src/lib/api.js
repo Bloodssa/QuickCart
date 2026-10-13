@@ -2,7 +2,6 @@ import axios from "axios";
 import { clearSession, getAccessToken, getRefreshToken, saveSession } from "./session";
 
 export const API_URL = import.meta.env.VITE_API_URL;
-console.log("QuickCart API URL:", API_URL);
 export const AUTH_LOGOUT_EVENT = "auth:logout";
 
 export const api = axios.create({ baseURL: API_URL, timeout: 15000 });

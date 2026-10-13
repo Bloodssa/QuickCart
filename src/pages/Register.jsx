@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import AuthShell from "../components/AuthForm";
 import FormField from "../components/FormField";
 import { getErrorMessage } from "../lib/api";
 import { registerUser } from "../lib/authApi";
 
-const Register = () => {
+export default function Register() {
     const navigate = useNavigate();
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -14,7 +15,6 @@ const Register = () => {
         const form = new FormData(event.currentTarget);
         const password = form.get("password");
 
-        // validation
         if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
             setError("Password must include at least one letter and one number.");
             return;
@@ -25,65 +25,79 @@ const Register = () => {
         }
 
         setError(null);
-        setSubmitting(true)
-
+        setSubmitting(true);
         try {
             await registerUser({
                 username: form.get("username").trim(),
                 fullName: form.get("fullName").trim(),
-                email: form.get("email"),
-                phone: form.get("phone"),
-                password
+                email: form.get("email").trim(),
+                phone: form.get("phone").trim(),
+                password,
             });
             navigate("/login", { replace: true, state: { registered: true } });
         } catch (err) {
-            setError(getErrorMessage(err))
+            setError(getErrorMessage(err));
         } finally {
             setSubmitting(false);
         }
     }
 
     return (
-        <>
-            <title>Register</title>
-
-            <form onSubmit={handleSubmit} className="mx-auto max-w-sm space-y-4">
-                <h1 className="text-2xl font-extrabold text-accent-100">Create Account</h1>
-
-                <FormField label="Full name" id="fullName" maxLength={150} required />
-                <FormField label="Username" id="username" autoComplete="username" minLength={3} maxLength={50} required />
-                <FormField label="Email" id="email" type="email" maxLength={255} required />
-
+        <AuthShell
+            title="Register an Account"
+            subtitle="Register to start shopping on QuickCart."
+            footer={
+                <>
+                    Already have an account?{" "}
+                    <Link to="/login" className="font-semibold text-heading hover:text-accent-100">
+                        Login here
+                    </Link>
+                </>
+            }
+        >
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <FormField label="Full name" id="fullName" placeholder="John Doe" maxLength={150} autoFocus required />
+                <FormField label="Username" id="username" placeholder="jdoe" autoComplete="username" minLength={3} maxLength={50} required />
+                <FormField label="Email" id="email" type="email" placeholder="jdoe@gmail.com" maxLength={255} required />
                 <FormField
                     label="Mobile number"
                     id="phone"
                     type="tel"
-                    pattern="((\+63|0)9[0-9]{9})"
+                    placeholder="09171234567"
+                    pattern="(\+63|0)9[0-9]{9}"
+                    title="Philippine mobile number, e.g. 09171234567 or +639171234567"
                     required
-                    autoComplete="phone"
                 />
-
-                <FormField label="Password" id="password" type="password" autoComplete="new-password" minLength={8} required />
-                <FormField label="Confirm password" id="confirmPassword" type="password" autoComplete="new-password" required />
-
+                <FormField
+                    label="Password"
+                    id="password"
+                    type="password"
+                    placeholder="********"
+                    autoComplete="new-password"
+                    minLength={8}
+                    hint="8+ characters, with a letter and a number"
+                    required
+                />
+                <FormField
+                    label="Confirm password"
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="********"
+                    autoComplete="new-password"
+                    required
+                />
                 {error && (
-                    <p role="alert" className="text-sm text-red-600">
+                    <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
                         {error}
                     </p>
                 )}
-
-                <button disabled={submitting} className="w-full rounded bg-accent-100 py-2 text-white disabled:opacity-50">
+                <button
+                    disabled={submitting}
+                    className="h-12 w-full rounded-md bg-accent-100 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
+                >
                     {submitting ? "Creating account…" : "Register"}
                 </button>
-                <p className="text-sm">
-                    Already have an account?{" "}
-                    <Link to="/login" className="underline">
-                        Log in
-                    </Link>
-                </p>
             </form>
-        </>
+        </AuthShell>
     );
 }
-
-export default Register;
