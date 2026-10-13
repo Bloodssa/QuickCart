@@ -11,6 +11,8 @@ import heroImage3 from "../assets/images/hero/hero-image-3.jpg"
 import collectionImage from "../assets/images/hero/collection.jpg"
 import bestSellerImage from "../assets/images/hero/best-seller.jpg"
 import newArrivalImage from "../assets/images/hero/new-arrival.jpg"
+import earbuds from "../assets/images/category/Wireless Earbuds Pro.jpg"
+
 
 // category
 import electonicImage from "../assets/images/category/electronic.jpg"
@@ -89,7 +91,7 @@ const HomePage = () => {
             name: "Wireless Earbuds Pro",
             category: "Electronics",
             price: 2499,
-            imageUrl: "/images/earbuds.png",
+            imageUrl: earbuds,
             rating: 4.7,
             reviewCount: 124,
             stockQuantity: 25,
