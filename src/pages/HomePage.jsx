@@ -14,6 +14,8 @@ import newArrivalImage from "../assets/images/hero/new-arrival.jpg"
 import earbuds from "../assets/images/category/Wireless Earbuds Pro.jpg"
 import runningshoes from "../assets/images/category/Running Shoes.jpg"
 import laptop from "../assets/images/category/Laptop.jpg"
+import bags from "../assets/images/category/Backpack.jpg"
+
 
 
 // category
@@ -121,9 +123,9 @@ const HomePage = () => {
         {
             id: 4,
             name: "Casual Backpack",
-            category: "Bags",
+            category: bags,
             price: 1299,
-            imageUrl: "/images/backpack.png",
+            imageUrl: bags,
             rating: 4.6,
             reviewCount: 67,
             stockQuantity: 0,
