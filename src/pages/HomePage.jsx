@@ -12,6 +12,7 @@ import collectionImage from "../assets/images/hero/collection.jpg"
 import bestSellerImage from "../assets/images/hero/best-seller.jpg"
 import newArrivalImage from "../assets/images/hero/new-arrival.jpg"
 import earbuds from "../assets/images/category/Wireless Earbuds Pro.jpg"
+import runningshoes from "../assets/images/category/Running Shoes.jpg"
 
 
 // category
@@ -101,7 +102,7 @@ const HomePage = () => {
             name: "Running Shoes",
             category: "Fashion",
             price: 1899,
-            imageUrl: "/images/running-shoes.png",
+            imageUrl: runningshoes,
             rating: 4.5,
             reviewCount: 89,
             stockQuantity: 12,
