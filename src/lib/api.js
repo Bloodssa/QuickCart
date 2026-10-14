@@ -1,10 +1,11 @@
 import axios from "axios";
-import { clearSession, getAccessToken, getRefreshToken, saveSession } from "./session";
+import { clearSession, getAccessToken, saveSession } from "./session";
 
 export const API_URL = import.meta.env.VITE_API_URL;
 export const AUTH_LOGOUT_EVENT = "auth:logout";
 
-export const api = axios.create({ baseURL: API_URL, timeout: 15000 });
+// withCredentials lets the browser send and receive the httpOnly refresh cookie across origins
+export const api = axios.create({ baseURL: API_URL, timeout: 15000, withCredentials: true });
 export const unwrap = (request) => request.then((response) => response.data);
 
 api.interceptors.request.use((config) => {
@@ -16,13 +17,19 @@ api.interceptors.request.use((config) => {
 const AUTH_ROUTES = ["/api/auth/login", "/api/auth/register", "/api/auth/refresh"];
 let refreshing = null;
 
-async function refreshAccessToken() {
-    const { data } = await axios.post(`${API_URL}/api/auth/refresh`, {
-        refreshToken: getRefreshToken()
-    });
+export function refreshSession() {
+    if (!refreshing) {
+        refreshing = axios
+            .post(`${API_URL}/api/auth/refresh`, null, {
+                withCredentials: true,
+            })
+            .then(({ data }) => saveSession(data))
+            .finally(() => {
+                refreshing = null;
+            });
+    }
 
-    // save in local storage
-    return saveSession(data);
+    return refreshing;
 }
 
 function forceLogout() {
@@ -44,20 +51,12 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // if user failed to get the refresh token then force log out the user
-        if (!getRefreshToken()) {
-            forceLogout();
-            return Promise.reject(error);
-        }
-
         original._retried = true;
 
         try {
-            refreshing ??= refreshAccessToken().finally(() => {
-                refreshing = null;
-            });
+            const accessToken = await refreshSession(); // coockie freeflight
 
-            const accessToken = await refreshing;
+            original.headers = original.headers ?? {};
             original.headers.Authorization = `Bearer ${accessToken}`;
             return api(original);
         } catch (refreshError) {

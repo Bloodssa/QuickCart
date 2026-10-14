@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import AuthShell from "../components/AuthForm";
 import FormField from "../components/FormField";
 import { useAuth } from "../hooks/useAuth";
@@ -7,9 +7,9 @@ import { getErrorMessage } from "../lib/api";
 
 export default function Login() {
     const { login } = useAuth();
-    const location = useLocation();
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [password, setPassword] = useState("");
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -21,6 +21,7 @@ export default function Login() {
             await login({ username: form.get("username").trim(), password: form.get("password") });
         } catch (err) {
             setError(getErrorMessage(err));
+            setPassword("");
         } finally {
             setSubmitting(false);
         }
@@ -40,9 +41,9 @@ export default function Login() {
             }
         >
             <form onSubmit={handleSubmit} className="space-y-5">
-                {location.state?.registered && (
-                    <p role="status" className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
-                        Account created. Please log in.
+                {error && (
+                    <p role="alert" className="text-center rounded-md text-red-500 border border-red-500 bg-red-100 px-2 py-3 text-sm">
+                        {error}
                     </p>
                 )}
                 <FormField label="Username" id="username" placeholder="jdoe" autoComplete="username" autoFocus required />
@@ -51,14 +52,11 @@ export default function Login() {
                     id="password"
                     type="password"
                     placeholder="********"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     autoComplete="current-password"
                     required
                 />
-                {error && (
-                    <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
-                        {error}
-                    </p>
-                )}
                 <button
                     disabled={submitting}
                     className="h-12 w-full rounded-md bg-accent-100 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-60"

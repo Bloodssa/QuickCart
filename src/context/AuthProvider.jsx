@@ -1,42 +1,49 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AUTH_LOGOUT_EVENT } from "../lib/api";
+import { AUTH_LOGOUT_EVENT, refreshSession } from "../lib/api";
 import * as authApi from "../lib/authApi";
-import { clearSession, getAccessToken, saveSession } from "../lib/session";
+import { clearSession, hasSession, saveSession } from "../lib/session";
 import { AuthContext } from "./AuthContext";
 
-export default function AuthProvider({ children })
-{
+export default function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
-
     // loading only when verifying a left over token
-    const [status, setStatus] = useState(() => (getAccessToken() ? "loading" : "anonymous"));
+    const [status, setStatus] = useState(() => (hasSession() ? "loading" : "anonymous"));
 
     const reset = useCallback(() => {
         setUser(null);
         setStatus("anonymous");
     }, []);
 
-    // restore the session on page load
+    // restore the session on page load the access token is gone after a refresh, the cookie is not
     useEffect(() => {
-        if (!getAccessToken()) return;
+        if (!hasSession()) return;
 
         let cancelled = false;
 
-        authApi.me()
-            .then(me => {
+        async function restoreSession() {
+            try {
+                await refreshSession();
+
+                const me = await authApi.me();
+
                 if (cancelled) return;
+
                 setUser(me);
                 setStatus("authenticated");
-            })
-            .catch(() => {
+            } catch {
                 if (cancelled) return;
-                clearSession();
-                setStatus("anonymous");
-            });
 
-            return () => {
-                cancelled = true;
+                clearSession();
+                setUser(null);
+                setStatus("anonymous");
             }
+        }
+
+        restoreSession();
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     // throw by api.js when a token can no longer refresh or expires
@@ -57,7 +64,7 @@ export default function AuthProvider({ children })
     const logout = useCallback(async () => {
         try {
             await authApi.logout(); // revokes token on the backend
-        }catch(e) {
+        } catch (e) {
             console.error(e);
         }
 

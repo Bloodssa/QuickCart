@@ -1,9 +1,26 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { UserRound, ShoppingCart, Search, Menu, X } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { UserRound, ShoppingCart, Search, Menu, X, CircleUserRound } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { LogOut } from "lucide-react";
 
-const Header = () => {
+const Header = ({ subhead }) => {
     const [isMenuOpen, setMenuOpen] = useState(false);
+    const [isOpenProfile, setProfileOpen] = useState(false);
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        setProfileOpen(false);
+        setMenuOpen(false);
+
+        try {
+            await logout();
+            navigate("/", { replace: true });
+        } catch (err) {
+            console.error("Log out failed", err);
+        }
+    }
 
     const navLinks = [
         { name: "Home", path: "/" },
@@ -30,14 +47,59 @@ const Header = () => {
                             />
                         </div>
                     </div>
-                    <div className="hidden md:flex items-center gap-3 shrink-0">
-                        <Link to="/login" className="flex gap-2 px-4 py-2 items-center justify-between rounded-md border border-gray-300 hover:bg-accent-100 hover:text-white transition-colors duration-250 group">
-                            <UserRound className="w-5 h-5 text-black group-hover:text-white transition-colors" />
-                            <span className="font-semibold text-sm">Log In</span>
-                        </Link>
+                    <div className="hidden md:flex items-center gap-1 shrink-0">
+                        {!user && (
+                            <Link to="/login" className="flex gap-2 px-4 py-2 items-center justify-between rounded-md border border-gray-300 hover:bg-accent-100 hover:text-white transition-colors duration-250 group">
+                                <UserRound className="w-5 h-5 text-black group-hover:text-white transition-colors" />
+                                <span className="font-semibold text-sm">Log In</span>
+                            </Link>
+                        )}
                         <Link to="/cart" className="relative px-3 py-2 rounded-md hover:bg-accent-100 hover:text-white transition-colors duration-250 group flex items-center justify-center" aria-label="View Shopping Cart">
                             <ShoppingCart className="w-5 h-5 text-black group-hover:text-white transition-colors" />
                         </Link>
+
+                        {user && (
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setProfileOpen(!isOpenProfile)}
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 text-white font-bold uppercase hover:bg-accent-hover transition-colors"
+                                    aria-label="Open profile menu"
+                                    aria-expanded={isOpenProfile}
+                                >
+                                    {user.fullName?.[0] ?? "U"}
+                                </button>
+                                {isOpenProfile && (
+                                    <div className="absolute right-0 top-full z-50 mt-3 w-60 overflow-hidden rounded-lg border border-gray-200 bg-white">
+                                        <div className="border-b border-gray-200 px-4 py-4">
+                                            <p className="truncate font-semibold text-neutral-900">
+                                                {user.fullName}
+                                            </p>
+                                        </div>
+
+                                        <div className="p-2">
+                                            <Link
+                                                to="/me"
+                                                onClick={() => setProfileOpen(false)}
+                                                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-gray-100"
+                                            >
+                                                <CircleUserRound className="h-5 w-5" />
+                                                My Profile
+                                            </Link>
+
+                                            <button
+                                                type="button"
+                                                onClick={handleLogout}
+                                                className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                                            >
+                                                <LogOut className="h-5 w-5" />
+                                                Log Out
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Mobile menu */}
@@ -67,39 +129,60 @@ const Header = () => {
                             />
                         </div>
 
-                        <nav className="flex flex-col space-y-2 pt-2 border-t border-gray-300 font-medium text-neutral-800">
-                            <a href="/" className="py-1.5 hover:text-accent-300">Home</a>
-                            <a href="/categories" className="py-1.5 hover:text-accent-300">Categories</a>
-                            <a href="/deals" className="py-1.5 hover:text-accent-300">Deals</a>
-                            <a href="/new-arrivals" className="py-1.5 hover:text-accent-300">New Arrivals</a>
-                            <a href="/best-sellers" className="py-1.5 hover:text-accent-300">Best Sellers</a>
-                        </nav>
+                        {subhead && (
+                            <nav className="flex flex-col space-y-2 pt-2 border-t border-gray-300 font-medium text-neutral-900">
+                                {navLinks.map(link => (
+                                    <NavLink
+                                        key={link.path}
+                                        to={link.path}
+                                        className={({ isActive }) =>
+                                            isActive ? "py-1 font-bold text-accent-300 -mb-px transition-colors"
+                                                : "py-1 text-neutral-700 hover:text-accent-300 transition-colors"
+                                        }
+                                    >
+                                        {link.name}
+                                    </NavLink>
+                                ))}
+                            </nav>
+                        )}
 
-                        <Link to="/login" className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-gray-300 font-semibold text-sm hover:bg-accent-100 hover:text-white transition-colors">
+                        <Link to={!user ? "/login" : "/me"} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-gray-300 font-semibold text-sm hover:bg-accent-100 hover:text-white transition-colors">
                             <UserRound className="w-5 h-5" />
-                            <span>Log In</span>
+                            <span>{!user ? "Log In" : "Profile"}</span>
                         </Link>
+                        {user && (
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="flex w-full items-center justify-center gap-2 rounded-md border border-red-200 py-2.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
+                            >
+                                <LogOut className="h-5 w-5" />
+                                Log Out
+                            </button>
+                        )}
                     </div>
                 )}
             </header>
 
             {/* Desktop sub nav */}
-            <nav className="hidden md:block border-b border-gray-300">
-                <div className="container mx-auto flex px-4 py-2 md:px-8 md:py-2 gap-10 font-normal">
-                    {navLinks.map(link => (
-                        <NavLink
-                            key={link.path}
-                            to={link.path}
-                            className={({ isActive }) =>
-                                isActive ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"
-                                    : "py-1 text-neutral-700 hover:text-accent-300 transition-colors"
-                            }
-                        >
-                            {link.name}
-                        </NavLink>
-                    ))}
-                </div>
-            </nav>
+            {subhead && (
+                <nav className="hidden md:block border-b border-gray-300">
+                    <div className="container mx-auto flex items-center justify-center px-4 py-2 md:px-8 md:py-2 gap-10 font-normal">
+                        {navLinks.map(link => (
+                            <NavLink
+                                key={link.path}
+                                to={link.path}
+                                className={({ isActive }) =>
+                                    isActive ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"
+                                        : "py-1 text-neutral-700 hover:text-accent-300 transition-colors"
+                                }
+                            >
+                                {link.name}
+                            </NavLink>
+                        ))}
+                    </div>
+                </nav>
+            )}
         </>
     );
 }

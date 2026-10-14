@@ -123,7 +123,7 @@ const HomePage = () => {
         {
             id: 4,
             name: "Casual Backpack",
-            category: bags,
+            category: "Bags",
             price: 1299,
             imageUrl: bags,
             rating: 4.6,

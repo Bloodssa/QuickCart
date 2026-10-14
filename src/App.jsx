@@ -7,36 +7,47 @@ import { Suspense, lazy } from "react";
 import PageLoader from "./components/PageLoader";
 import { AdminRoute, GuestRoute, ProtectedRoute } from "./components/RouteGuard";
 import NotFound from "./pages/NotFound";
-import Home from "./pages/customer/Home"
+import Profile from "./pages/customer/Profile";
+import ProductPage from "./pages/products/ProductPage";
+import ScrollToTop from "./components/ScrollToTop";
 
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 
 function App() {
   return (
-    <Suspense fallback={PageLoader}>
-      <Routes>
-        <Route index element={<HomePage />} />
+    <>
+      <ScrollToTop />
+      <Suspense fallback={PageLoader}>
+        <Routes>
 
-        <Route element={<GuestRoute />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Route>
-
-        <Route element={<ProtectedRoute /> }>
+          {/* Public Pages */}
+          <Route index element={<HomePage />} />
+          <Route path="/products/:id" element={<ProductPage />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/home" element={<Home />} />
-        </Route>
 
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
+          {/* Guest only page */}
+          <Route element={<GuestRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Route>
-        </Route>
 
-        <Route path="*"element={<NotFound />} />
-      </Routes>
-    </Suspense>
+          {/* Auth required */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/me" element={<Profile />} />
+          </Route>
+
+          {/* Admin role required */}
+          <Route path="/admin" element={<AdminRoute />}>
+            <Route element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+            </Route>
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </>
   );
 }
 

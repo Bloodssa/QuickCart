@@ -36,7 +36,7 @@ export function GuestRoute()
   if (status === "loading") return <PageLoader />;
   if (status === "authenticated") {
     const from = location.state?.from;
-    const target = from ? `${from.pathname}${from.search}` : isAdmin ? "/admin" : "/home";
+    const target = from ? `${from.pathname}${from.search}` : isAdmin ? "/admin" : "/";
 
     return <Navigate to={target} replace />
   }

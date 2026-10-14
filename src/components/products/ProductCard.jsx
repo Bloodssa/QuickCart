@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 
 const formatPrice = (price) => {
     return new Intl.NumberFormat("en-PH", {
@@ -8,6 +9,7 @@ const formatPrice = (price) => {
 };
 
 const ProductCard = ({
+    id,
     name,
     category,
     price,
@@ -17,7 +19,7 @@ const ProductCard = ({
     const isInStock = stockQuantity > 0;
 
     return (
-        <article className="min-w-0 overflow-hidden rounded-md border border-gray-300 bg-white">
+        <Link to={`/products/${id}`} className="min-w-0 overflow-hidden rounded-md border border-gray-300 bg-white">
             <div className="m-2 flex aspect-square items-center justify-center overflow-hidden rounded-md bg-gray-50">
                 {imageUrl ? (
                     <img 
@@ -50,7 +52,7 @@ const ProductCard = ({
                     {isInStock ? "In Stock" : "Out of Stock"}
                 </p>
             </div>
-        </article>
+        </Link>
     );
 }
 

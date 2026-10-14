@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import AuthShell from "../components/AuthForm";
 import FormField from "../components/FormField";
@@ -7,6 +8,7 @@ import { registerUser } from "../lib/authApi";
 
 export default function Register() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -27,14 +29,22 @@ export default function Register() {
         setError(null);
         setSubmitting(true);
         try {
-            await registerUser({
+            const payload = {
                 username: form.get("username").trim(),
                 fullName: form.get("fullName").trim(),
                 email: form.get("email").trim(),
                 phone: form.get("phone").trim(),
                 password,
+            };
+
+            await registerUser(payload);
+
+            await login({
+                username: payload.username,
+                password: payload.password
             });
-            navigate("/login", { replace: true, state: { registered: true } });
+
+            navigate("/", { replace: true, state: { registered: true } });
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
