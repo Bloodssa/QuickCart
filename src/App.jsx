@@ -9,6 +9,7 @@ import { AdminRoute, GuestRoute, ProtectedRoute } from "./components/RouteGuard"
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/customer/Profile";
 import ProductPage from "./pages/products/ProductPage";
+import ProductsPage from "./pages/products/ProductsPage";
 import ScrollToTop from "./components/ScrollToTop";
 
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
@@ -23,6 +24,7 @@ function App() {
 
           {/* Public Pages */}
           <Route index element={<HomePage />} />
+          <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductPage />} />
           <Route path="/cart" element={<Cart />} />
 

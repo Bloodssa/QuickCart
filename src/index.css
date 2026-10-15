@@ -1,8 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-@theme 
-{
+@theme {
     /* Font Typography */
     --font-sans: "Plus Jakarta Sans", sans-serif;
 
@@ -17,8 +16,7 @@
     --color-background: #ffffff;
 }
 
-:root 
-{
+:root {
     font-family: var(--font-sans);
     color: var(--color-heading);
     background: var(--color-background);
@@ -28,9 +26,40 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-body 
-{
+body {
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
+}
+
+.category-grid > a {
+    border-right: 1px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
+}
+
+@media (max-width: 767px) {
+    .category-grid > a:nth-child(2n) {
+        border-right: none;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .category-grid > a:nth-child(3n) {
+        border-right: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    .category-grid > a:nth-child(5n) {
+        border-right: none;
+    }
+}
+
+.category-grid > a {
+    border-right: 1px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
+}
+
+.category-grid > a {
+    box-shadow: 1px 0 0 0 #d1d5db, 0 1px 0 0 #d1d5db;
 }

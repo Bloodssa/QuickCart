@@ -163,10 +163,10 @@ const HomePage = () => {
                             Shop the things you love, all in one place.
                         </p>
 
-                        <button className="flex gap-2 w-fit mt-4 sm:mt-6 px-5 py-2.5 sm:px-6 sm:py-3 text-white bg-accent-100 font-semibold rounded-md transition-colors duration-200 hover:bg-accent-hover text-sm sm:text-base">
+                        <Link to="/products" className="flex gap-2 w-fit mt-4 sm:mt-6 px-5 py-2.5 sm:px-6 sm:py-3 text-white bg-accent-100 font-semibold rounded-md transition-colors duration-200 hover:bg-accent-hover text-sm sm:text-base">
                             <span>Shop Now</span>
                             <MoveRight />
-                        </button>
+                        </Link>
                     </div>
                 </div>
                 <div className="flex gap-3 items-center justify-center absolute right-0 bottom-0 h-15 w-auto p-2 z-10000">
@@ -223,30 +223,34 @@ const HomePage = () => {
                 })}
             </div>
 
-            {/* Categoty Section */}
             <section className="mt-13">
                 <h1 className="font-bold text-3xl">Shop by Category</h1>
-                <p className="text-neutral-500 mt-1 text-base">Browse our top categories</p>
+                <p className="text-neutral-500 mt-1 text-base">
+                    Browse our top categories
+                </p>
 
-                <div className="w-full border border-gray-300 rounded-md mt-4 bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 divide-y divide-x-0 md:divide-x lg:divide-y divide-gray-300 overflow-hidden">
-                    {categories.map((category) => (
-                        <Link
-                            key={category.id}
-                            className="flex flex-col items-center justify-center p-6 text-center hover:bg-gray-50 transition-colors group cursor-pointer border-t border-gray-300 first:border-t-0 md:nth-[-n+3]:border-t-0 lg:nth-[-n+5]:border-t-0"
-                        >
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-neutral-100 flex items-center justify-center overflow-hidden mb-3 group-hover:scale-105 transition-transform duration-200">
-                                <img
-                                    src={category.image}
-                                    alt={category.name}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
+                <div className="mt-4 border border-gray-300 rounded-md overflow-hidden bg-white">
+                    <div className="category-grid -mr-px -mb-px grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                        {categories.map((category) => (
+                            <Link
+                                key={category.id}
+                                to=""
+                                className="flex flex-col items-center justify-center p-4 sm:p-6 text-center bg-white hover:bg-gray-50 transition-colors group cursor-pointer"
+                            >
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-neutral-100 flex items-center justify-center overflow-hidden mb-3 group-hover:scale-105 transition-transform duration-200">
+                                    <img
+                                        src={category.image}
+                                        alt={category.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
 
-                            <span className="font-semibold text-neutral-800 text-sm sm:text-base group-hover:text-accent-100 transition-colors">
-                                {category.name}
-                            </span>
-                        </Link>
-                    ))}
+                                <span className="font-semibold text-neutral-800 text-sm sm:text-base group-hover:text-accent-100 transition-colors">
+                                    {category.name}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </section>
 
@@ -275,7 +279,7 @@ const HomePage = () => {
                     </p>
 
                     <div className="mt-5">
-                        <Link className="w-fit flex gap-3 px-4 py-3 bg-white text-accent-100 rounded-md font-extrabold hover:bg-white/80">
+                        <Link to="/products" className="w-fit flex gap-3 px-4 py-3 bg-white text-accent-100 rounded-md font-extrabold hover:bg-white/80">
                             Shop Now
                             <MoveRight />
                         </Link>

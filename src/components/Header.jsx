@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { UserRound, ShoppingCart, Search, Menu, X, CircleUserRound } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { LogOut } from "lucide-react";
@@ -11,6 +11,10 @@ const Header = ({ subhead }) => {
     const isLoading = status === "loading";
     const isLoggedIn = status === "authenticated" && Boolean(user);
     const navigate = useNavigate();
+    const location = useLocation();
+    const currentUrl = location.pathname + location.search;
+
+    const isLinkActive = (path) => currentUrl === path;
 
     const handleLogout = async () => {
         setProfileOpen(false);
@@ -26,10 +30,10 @@ const Header = ({ subhead }) => {
 
     const navLinks = [
         { name: "Home", path: "/" },
-        { name: "Categories", path: "/categories" },
-        { name: "Deals", path: "/deals" },
-        { name: "New Arrivals", path: "/new-arrivals" },
-        { name: "Best Sellers", path: "/best-sellers" },
+        { name: "Products", path: "/products" },
+        { name: "Deals", path: "/products?featured=true" },
+        { name: "New Arrivals", path: "/products?sort=newest" },
+        { name: "Best Sellers", path: "/products?sort=popular" },
     ];
 
     return (
@@ -40,7 +44,7 @@ const Header = ({ subhead }) => {
                         <Link to="/" className="font-sans font-extrabold text-lg md:text-2xl text-neutral-900 shrink-0"><span className="text-accent-300">Quick</span>Cart</Link>
 
                         {/* Desktop Input serach */}
-                        <div className="hidden md:flex relative items-center w-full max-w-xl">
+                        <div className="hidden md:flex relative items-center w-full">
                             <Search className="absolute left-3 w-4 h-4 text-neutral-500" />
                             <input
                                 type="text"
@@ -137,8 +141,10 @@ const Header = ({ subhead }) => {
                                     <NavLink
                                         key={link.path}
                                         to={link.path}
-                                        className={({ isActive }) =>
-                                            isActive ? "py-1 font-bold text-accent-300 -mb-px transition-colors"
+                                        end
+                                        className={
+                                            isLinkActive(link.path)
+                                                ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"
                                                 : "py-1 text-neutral-700 hover:text-accent-300 transition-colors"
                                         }
                                     >
@@ -176,8 +182,10 @@ const Header = ({ subhead }) => {
                             <NavLink
                                 key={link.path}
                                 to={link.path}
-                                className={({ isActive }) =>
-                                    isActive ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"
+                                end
+                                className={
+                                    isLinkActive(link.path)
+                                        ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"
                                         : "py-1 text-neutral-700 hover:text-accent-300 transition-colors"
                                 }
                             >
