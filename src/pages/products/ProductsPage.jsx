@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import HomeLayout from "../../layouts/HomeLayout";
 import ProductSection from "../../components/sections/ProductSection";
 import ProductCardSkeleton from "../../components/ProductCardSkeleton";
-import { getProducts } from "../../lib/productApi";
+import { getProducts } from "../../lib/productsApi";
 
 const PAGE_SIZE = 20;
 

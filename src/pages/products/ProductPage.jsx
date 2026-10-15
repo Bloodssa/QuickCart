@@ -1,29 +1,37 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import HomeLayout from "../../layouts/HomeLayout";
-import earbuds from "../../assets/images/category/Wireless Earbuds Pro.jpg"
+import { useProduct } from "../../hooks/useProducts";
 
 const ProductPage = () => {
     const { id } = useParams();
-    const sampleProduct = {
-        id: 1,
-        name: "Wireless Earbuds Pro",
-        category: "Electronics",
-        price: 2499,
-        imageUrl: earbuds,
-        stockQuantity: 25,
-    }
+
+    const { data: product, isLoading, error } = useProduct(id);
+
+    if (isLoading) return <p>Loading product...</p>;
+    if (error || !product) return <p>Product not found.</p>;
+
+    const defaultImage = product.images?.find((image) => image.isDefault)?.imageUrl ?? product.images?.[0]?.imageUrl;
 
     return (
         <HomeLayout>
-            {/* Product Information Display */}
-            <img className="h-50 w-50" src={earbuds} alt="" srcset="" />
-            < p className=""> Product Id: {id}</p >
-            < p className=""> Product Id: {sampleProduct.name}</p >
-            < p className=""> Product Id: {sampleProduct.category}</p >
-            < p className=""> Product Id: {sampleProduct.price}</p >
-            < p className=""> Product Id: {sampleProduct.stockQuantity}</p >
+            <Link to="/">
+                Go back
+            </Link>
+            <div className="flex flex-col gap-4">
+                <img src={defaultImage} alt={product.name} width="200" />
+
+                <h1>Product: {product.name}</h1>
+                <p>Category: {product.categoryName}</p>
+                <p>Price: ₱{product.price}</p>
+
+                <p className="whitespace-pre-line">
+                    Description: {product.description}
+                </p>
+
+                <p>Stock: {product.stockQuantity}</p>
+            </div>
         </HomeLayout>
     );
-}
+};
 
 export default ProductPage;

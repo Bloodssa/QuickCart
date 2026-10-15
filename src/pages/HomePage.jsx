@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useProductList } from "../hooks/useProducts";
 import { ChevronLeft, ChevronRight, Truck, Headphones, Tag, ShieldCheck, MoveRight, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import HomeLayout from "../layouts/HomeLayout";
@@ -11,12 +12,6 @@ import heroImage3 from "../assets/images/hero/hero-image-3.jpg"
 import collectionImage from "../assets/images/hero/collection.jpg"
 import bestSellerImage from "../assets/images/hero/best-seller.jpg"
 import newArrivalImage from "../assets/images/hero/new-arrival.jpg"
-import earbuds from "../assets/images/category/Wireless Earbuds Pro.jpg"
-import runningshoes from "../assets/images/category/Running Shoes.jpg"
-import laptop from "../assets/images/category/Laptop.jpg"
-import bags from "../assets/images/category/Backpack.jpg"
-
-
 
 // category
 import electonicImage from "../assets/images/category/electronic.jpg"
@@ -88,49 +83,21 @@ const HomePage = () => {
         { id: 10, name: "Books & Stationery", image: booksImage },
     ];
 
-    // Static product
-    const featuredProducts = [
-        {
-            id: 1,
-            name: "Wireless Earbuds Pro",
-            category: "Electronics",
-            price: 2499,
-            imageUrl: earbuds,
-            rating: 4.7,
-            reviewCount: 124,
-            stockQuantity: 25,
-        },
-        {
-            id: 2,
-            name: "Running Shoes",
-            category: "Fashion",
-            price: 1899,
-            imageUrl: runningshoes,
-            rating: 4.5,
-            reviewCount: 89,
-            stockQuantity: 12,
-        },
-        {
-            id: 3,
-            name: "Laptop 14-inch Intel Core i5",
-            category: "Electronics",
-            price: 24990,
-            imageUrl: laptop,
-            rating: 4.8,
-            reviewCount: 203,
-            stockQuantity: 8,
-        },
-        {
-            id: 4,
-            name: "Casual Backpack",
-            category: "Bags",
-            price: 1299,
-            imageUrl: bags,
-            rating: 4.6,
-            reviewCount: 67,
-            stockQuantity: 0,
-        },
-    ];
+    const featuredParams = useMemo(() => ({ featured: true, page: 1, pageSize: 4 }), []);
+
+    const trendingParams = useMemo(() => ({ sort: "popular", page: 1, pageSize: 5 }), []);
+
+    const newArrivalParams = useMemo(() => ({ sort: "newest", page: 1, pageSize: 4 }), []);
+
+    const { data: featuredData, isLoading: featuredLoading } = useProductList(featuredParams);
+
+    const { data: trendingData, isLoading: trendingLoading } = useProductList(trendingParams);
+
+    const { data: newArrivalData, isLoading: newArrivalLoading } = useProductList(newArrivalParams);
+
+    const featuredProducts = featuredData?.products ?? [];
+    const trendingProducts = trendingData?.products ?? [];
+    const newArrivalProducts = newArrivalData?.products ?? [];
 
     const handleAddToCart = (productId) => {
         console.log("Add product to cart:", productId);
@@ -259,7 +226,7 @@ const HomePage = () => {
                 <ProductSection
                     title="Featured Products"
                     products={featuredProducts}
-                    viewAllLink="/products"
+                    viewAllLink="/products?featured=true"
                     onAddToCart={handleAddToCart}
                     columns={4}
                 />
@@ -281,7 +248,7 @@ const HomePage = () => {
                     </p>
 
                     <div className="mt-5">
-                        <Link to="/products" className="w-fit flex gap-3 px-4 py-3 bg-white text-accent-100 rounded-md font-extrabold hover:bg-white/80">
+                        <Link to="/products?sort=newest" className="w-fit flex gap-3 px-4 py-3 bg-white text-accent-100 rounded-md font-extrabold hover:bg-white/80">
                             Shop Now
                             <MoveRight />
                         </Link>
@@ -293,8 +260,8 @@ const HomePage = () => {
             <div className="mt-12">
                 <ProductSection
                     title="Trending Now"
-                    products={featuredProducts}
-                    viewAllLink="/products"
+                    products={trendingProducts}
+                    viewAllLink="/products?sort=popular"
                     onAddToCart={handleAddToCart}
                     columns={5}
                 />
@@ -361,8 +328,8 @@ const HomePage = () => {
             <div className="mt-12">
                 <ProductSection
                     title="New Arrivals"
-                    products={featuredProducts}
-                    viewAllLink="/products"
+                    products={newArrivalProducts}
+                    viewAllLink="/products?sort=newest"
                     onAddToCart={handleAddToCart}
                     columns={4}
                 />

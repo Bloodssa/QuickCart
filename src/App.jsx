@@ -12,6 +12,7 @@ import ProductPage from "./pages/products/ProductPage";
 import ProductsPage from "./pages/products/ProductsPage";
 import ScrollToTop from "./components/ScrollToTop";
 import AdminProductPage from "./pages/admin/ProductPage";
+import AdminProductFormPage from "./pages/admin/AdminProductFormPage";
 
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -24,7 +25,7 @@ function App() {
         <Routes>
 
           {/* Public Pages */}
-          <Route index element={<HomePage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductPage />} />
           <Route path="/cart" element={<Cart />} />
@@ -44,7 +45,9 @@ function App() {
           <Route path="/admin" element={<AdminRoute />}>
             <Route element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
-              <Route path="/admin/products" element={<AdminProductPage />} />
+              <Route path="products" element={<AdminProductPage />} />
+              <Route path="products/new" element={<AdminProductFormPage />} />
+              <Route path="products/:id/edit" element={<AdminProductFormPage />} />
             </Route>
           </Route>
 
