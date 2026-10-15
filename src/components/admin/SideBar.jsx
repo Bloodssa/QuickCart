@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Store, X } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import SidebarLink from "./SideBarLink";
+import SidebarLink from "./AdminSidebarLink";
 import {
     LayoutDashboard,
     ShoppingBag,

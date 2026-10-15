@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-const SidebarLink = ({ item, onNavigate }) => {
+const AdminSidebarLink = ({ item, onNavigate }) => {
     const Icon = item.icon;
 
     return (
@@ -25,4 +25,4 @@ const SidebarLink = ({ item, onNavigate }) => {
     );
 };
 
-export default SidebarLink;
+export default AdminSidebarLink;
