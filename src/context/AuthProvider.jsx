@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AUTH_LOGOUT_EVENT, refreshSession } from "../lib/api";
 import * as authApi from "../lib/authApi";
-import { clearSession, hasSession, saveSession } from "../lib/session";
+import { clearSession, hasFreshAccessToken, hasSession, saveSession } from "../lib/session";
 import { AuthContext } from "./AuthContext";
 
 export default function AuthProvider({ children }) {
@@ -22,7 +22,8 @@ export default function AuthProvider({ children }) {
 
         async function restoreSession() {
             try {
-                await refreshSession();
+                // a reload inside the 15 minutes needs no refresh at all
+                if (!hasFreshAccessToken()) await refreshSession();
 
                 const me = await authApi.me();
 
@@ -30,10 +31,12 @@ export default function AuthProvider({ children }) {
 
                 setUser(me);
                 setStatus("authenticated");
-            } catch {
+            } catch(error) {
                 if (cancelled) return;
+                console.error("Could not restore the session:", error);
 
-                clearSession();
+                // forget the session only when the server rejected it; a network blip shouldn't log you out
+                if (error.response?.status === 401) clearSession();
                 setUser(null);
                 setStatus("anonymous");
             }

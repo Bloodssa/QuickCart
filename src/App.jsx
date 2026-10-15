@@ -18,7 +18,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
-      <Suspense fallback={PageLoader}>
+      <Suspense fallback={<PageLoader />}>
         <Routes>
 
           {/* Public Pages */}

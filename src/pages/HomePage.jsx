@@ -226,7 +226,7 @@ const HomePage = () => {
             {/* Categoty Section */}
             <section className="mt-13">
                 <h1 className="font-bold text-3xl">Shop by Category</h1>
-                <p className="text-neutral-500 mt-1 text-md">Browse our top categories</p>
+                <p className="text-neutral-500 mt-1 text-base">Browse our top categories</p>
 
                 <div className="w-full border border-gray-300 rounded-md mt-4 bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 divide-y divide-x-0 md:divide-x lg:divide-y divide-gray-300 overflow-hidden">
                     {categories.map((category) => (
@@ -264,10 +264,10 @@ const HomePage = () => {
                 style={{ backgroundImage: `url(${collectionImage})` }}
             >
                 <div className="relative z-10 max-w-lg p-6 sm:p-10">
-                    <p className="text-md md:text-2xl font-semibold">
+                    <p className="text-base md:text-2xl font-semibold">
                         New Collections
                     </p>
-                    <h2 className="mt-2 text-5xl font-bold sm:text-md">
+                    <h2 className="mt-2 text-5xl font-bold sm:text-base">
                         Find Your Next Favorite
                     </h2>
                     <p className="mt-2 text-sm sm:text-base">

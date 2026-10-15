@@ -40,7 +40,7 @@ const ProductCard = ({
                     </span>
                 )}
 
-                <h3 className="text-md font-bold text-neutral-900">
+                <h3 className="text-base font-bold text-neutral-900">
                     {name}
                 </h3>
 

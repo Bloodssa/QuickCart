@@ -7,7 +7,9 @@ import { LogOut } from "lucide-react";
 const Header = ({ subhead }) => {
     const [isMenuOpen, setMenuOpen] = useState(false);
     const [isOpenProfile, setProfileOpen] = useState(false);
-    const { user, logout } = useAuth();
+    const { user, status, logout } = useAuth();
+    const isLoading = status === "loading";
+    const isLoggedIn = status === "authenticated" && Boolean(user);
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -48,7 +50,7 @@ const Header = ({ subhead }) => {
                         </div>
                     </div>
                     <div className="hidden md:flex items-center gap-1 shrink-0">
-                        {!user && (
+                        {status === "anonymous" && (
                             <Link to="/login" className="flex gap-2 px-4 py-2 items-center justify-between rounded-md border border-gray-300 hover:bg-accent-100 hover:text-white transition-colors duration-250 group">
                                 <UserRound className="w-5 h-5 text-black group-hover:text-white transition-colors" />
                                 <span className="font-semibold text-sm">Log In</span>
@@ -58,7 +60,7 @@ const Header = ({ subhead }) => {
                             <ShoppingCart className="w-5 h-5 text-black group-hover:text-white transition-colors" />
                         </Link>
 
-                        {user && (
+                        {isLoggedIn && (
                             <div className="relative">
                                 <button
                                     type="button"
@@ -146,11 +148,13 @@ const Header = ({ subhead }) => {
                             </nav>
                         )}
 
-                        <Link to={!user ? "/login" : "/me"} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-gray-300 font-semibold text-sm hover:bg-accent-100 hover:text-white transition-colors">
-                            <UserRound className="w-5 h-5" />
-                            <span>{!user ? "Log In" : "Profile"}</span>
-                        </Link>
-                        {user && (
+                        {!isLoading && (
+                            <Link to={isLoggedIn ? "/me" : "/login"} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-gray-300 font-semibold text-sm hover:bg-accent-100 hover:text-white transition-colors">
+                                <UserRound className="w-5 h-5" />
+                                <span>{isLoggedIn ? "Profile" : "Log In"}</span>
+                            </Link>
+                        )}
+                        {isLoggedIn && (
                             <button
                                 type="button"
                                 onClick={handleLogout}

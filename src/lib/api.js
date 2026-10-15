@@ -58,7 +58,7 @@ api.interceptors.response.use(
 
             original.headers = original.headers ?? {};
             original.headers.Authorization = `Bearer ${accessToken}`;
-            return api(original);
+            return api(original); // replay the request that failed
         } catch (refreshError) {
             forceLogout();
             return Promise.reject(refreshError);
@@ -76,6 +76,6 @@ export function getErrorMessage(
 
     if (typeof data?.message === "string") return data.message; // services error: 401, 403, 429
 
-    const firstValidation = data?.error && Object.values(data.errors).flat()[0]; // ASP.NET validation
+    const firstValidation = data?.errors && Object.values(data.errors).flat()[0]; // ASP.NET validation
     return firstValidation ?? data?.title ?? fallback;
 }
