@@ -11,6 +11,7 @@ import Profile from "./pages/customer/Profile";
 import ProductPage from "./pages/products/ProductPage";
 import ProductsPage from "./pages/products/ProductsPage";
 import ScrollToTop from "./components/ScrollToTop";
+import AdminProductPage from "./pages/admin/ProductPage";
 
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -43,6 +44,7 @@ function App() {
           <Route path="/admin" element={<AdminRoute />}>
             <Route element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
+              <Route path="/admin/products" element={<AdminProductPage />} />
             </Route>
           </Route>
 

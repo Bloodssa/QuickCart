@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { UserRound, ShoppingCart, Search, Menu, X, CircleUserRound } from "lucide-react";
+import { UserRound, ShoppingCart, Search, Menu, X, CircleUserRound, ArrowLeft } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { LogOut } from "lucide-react";
 
@@ -44,7 +44,7 @@ const Header = ({ subhead }) => {
                         <Link to="/" className="font-sans font-extrabold text-lg md:text-2xl text-neutral-900 shrink-0"><span className="text-accent-300">Quick</span>Cart</Link>
 
                         {/* Desktop Input serach */}
-                        <div className="hidden md:flex relative items-center w-full">
+                        <div className="hidden md:flex relative items-center w-full mr-15">
                             <Search className="absolute left-3 w-4 h-4 text-neutral-500" />
                             <input
                                 type="text"
@@ -58,6 +58,16 @@ const Header = ({ subhead }) => {
                             <Link to="/login" className="flex gap-2 px-4 py-2 items-center justify-between rounded-md border border-gray-300 hover:bg-accent-100 hover:text-white transition-colors duration-250 group">
                                 <UserRound className="w-5 h-5 text-black group-hover:text-white transition-colors" />
                                 <span className="font-semibold text-sm">Log In</span>
+                            </Link>
+                        )}
+
+                        {isLoggedIn && user?.role?.toLowerCase() === "admin" && (
+                            <Link
+                                to="/admin"
+                                className="flex items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-neutral-800 transition-colors hover:bg-gray-100"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                Back to Dashboard
                             </Link>
                         )}
                         <Link to="/cart" className="relative px-3 py-2 rounded-md hover:bg-accent-100 hover:text-white transition-colors duration-250 group flex items-center justify-center" aria-label="View Shopping Cart">

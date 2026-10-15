@@ -255,13 +255,15 @@ const HomePage = () => {
             </section>
 
             {/* Featured Section */}
-            <ProductSection
-                title="Featured Products"
-                products={featuredProducts}
-                viewAllLink="/products"
-                onAddToCart={handleAddToCart}
-                columns={4}
-            />
+            <div className="mt-12">
+                <ProductSection
+                    title="Featured Products"
+                    products={featuredProducts}
+                    viewAllLink="/products"
+                    onAddToCart={handleAddToCart}
+                    columns={4}
+                />
+            </div>
 
             <div
                 className="w-full h-80 my-14 rounded-md bg-cover bg-center relative text-white flex items-center"
@@ -288,13 +290,15 @@ const HomePage = () => {
             </div>
 
             {/* Trending Section */}
-            <ProductSection
-                title="Trending Now"
-                products={featuredProducts}
-                viewAllLink="/products"
-                onAddToCart={handleAddToCart}
-                columns={5}
-            />
+            <div className="mt-12">
+                <ProductSection
+                    title="Trending Now"
+                    products={featuredProducts}
+                    viewAllLink="/products"
+                    onAddToCart={handleAddToCart}
+                    columns={5}
+                />
+            </div>
 
             {/* Collections */}
             <section className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -354,13 +358,15 @@ const HomePage = () => {
             </section>
 
             {/* New Arrival Section */}
-            <ProductSection
-                title="New Arrivals"
-                products={featuredProducts}
-                viewAllLink="/products"
-                onAddToCart={handleAddToCart}
-                columns={4}
-            />
+            <div className="mt-12">
+                <ProductSection
+                    title="New Arrivals"
+                    products={featuredProducts}
+                    viewAllLink="/products"
+                    onAddToCart={handleAddToCart}
+                    columns={4}
+                />
+            </div>
         </HomeLayout>
     );
 };

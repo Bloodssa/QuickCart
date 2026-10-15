@@ -11,7 +11,7 @@ const formatPrice = (price) => {
 const ProductCard = ({
     id,
     name,
-    category,
+    categoryName,
     price,
     imageUrl,
     stockQuantity,
@@ -34,9 +34,9 @@ const ProductCard = ({
             </div>
 
             <div className="flex flex-col p-3 pt-1">
-                {category && (
+                {categoryName && (
                     <span className="mb-1 w-fit max-w-full rounded-md bg-gray-100 px-1.5 py-0.5 text-xs rext-gray-500">
-                        {category}
+                        {categoryName}
                     </span>
                 )}
 

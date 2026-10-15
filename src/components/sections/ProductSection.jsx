@@ -10,7 +10,7 @@ const ProductSection = ({
     columns = 4
 }) => {
     return (
-        <section className="mt-12">
+        <section>
             <div className="mb-6 flex itemsend justify-between gap-4">
                 <div>
                     <h2 className="font-bold text-2xl md:text-3xl">

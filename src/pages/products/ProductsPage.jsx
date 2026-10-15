@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import HomeLayout from "../../layouts/HomeLayout";
 import ProductSection from "../../components/sections/ProductSection";
@@ -7,10 +7,10 @@ import { getProducts } from "../../lib/productApi";
 
 const PAGE_SIZE = 20;
 
-const sortTitles = {
+const sortTitle = {
     newest: "New Arrivals",
     popular: "Best Sellers",
-    trending: "Trending Now",
+    trending: "Trending Now"
 };
 
 const ProductsPage = () => {
@@ -31,18 +31,21 @@ const ProductsPage = () => {
         const load = async () => {
             setLoading(true);
             setError(null);
+
             try {
-                const result = await getProducts(
-                    { sort, categoryId, featured, search, page, pageSize: PAGE_SIZE },
-                    controller.signal
-                );
+                const result = await getProducts({
+                    sort, categoryId, featured, search, page, pageSize: PAGE_SIZE
+                }, controller.signal);
+
                 setData(result);
-            } catch (err) {
-                if (err.name !== "CanceledError" && err.name !== "AbortError") {
+            } catch (error) {
+                if (error.name !== "CanceledError" && error.name !== "AbortError") {
                     setError("Failed to load products.");
                 }
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
@@ -50,12 +53,7 @@ const ProductsPage = () => {
         return () => controller.abort();
     }, [sort, categoryId, featured, search, page]);
 
-    // Title: category name comes from the first product, since the API returns it per product
-    const title = categoryId
-        ? data.products[0]?.category ?? "Category"
-        : featured
-            ? "Deals"
-            : sortTitles[sort?.toLowerCase()] ?? "All Products";
+    const title = categoryId ? data.products[0]?.category ?? "Category" : featured ? "Deals" : sortTitle[sort?.toLocaleLowerCase()] ?? "All Products";
 
     const totalPages = Math.ceil(data.totalResults / PAGE_SIZE);
 
@@ -76,10 +74,10 @@ const ProductsPage = () => {
                 </div>
             )}
 
-            {error && <p className="mt-10 text-red-600">{error}</p>}
-
             {!loading && !error && data.products.length === 0 && (
-                <p className="mt-10 text-neutral-500">No products found.</p>
+                <p className="mt-10 text-neutral-500">
+                    No products found.
+                </p>
             )}
 
             {!loading && !error && data.products.length > 0 && (
@@ -111,6 +109,6 @@ const ProductsPage = () => {
             )}
         </HomeLayout>
     );
-};
+}
 
 export default ProductsPage;
