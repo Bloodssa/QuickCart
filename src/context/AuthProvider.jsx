@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AUTH_LOGOUT_EVENT, refreshSession } from "../lib/api";
-import * as authApi from "../lib/authApi";
-import { clearSession, hasFreshAccessToken, hasSession, saveSession } from "../lib/session";
+import { AUTH_LOGOUT_EVENT, refreshSession } from "../api/client";
+import * as authApi from "../api/auth";
+import { clearSession, hasFreshAccessToken, hasSession, saveSession } from "../api/session";
 import { AuthContext } from "./AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AuthProvider({ children }) {
+    const queryClient = useQueryClient();
     const [user, setUser] = useState(null);
     // loading only when verifying a left over token
     const [status, setStatus] = useState(() => (hasSession() ? "loading" : "anonymous"));
@@ -12,7 +14,8 @@ export default function AuthProvider({ children }) {
     const reset = useCallback(() => {
         setUser(null);
         setStatus("anonymous");
-    }, []);
+        queryClient.clear();
+    }, [queryClient]);
 
     // restore the session on page load the access token is gone after a refresh, the cookie is not
     useEffect(() => {
@@ -35,7 +38,7 @@ export default function AuthProvider({ children }) {
                 if (cancelled) return;
                 console.error("Could not restore the session:", error);
 
-                // forget the session only when the server rejected it; a network blip shouldn't log you out
+                // forget the session only when the server rejected it
                 if (error.response?.status === 401) clearSession();
                 setUser(null);
                 setStatus("anonymous");

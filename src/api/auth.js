@@ -1,4 +1,4 @@
-import { api, unwrap } from "./api";
+import { api, unwrap } from "./client";
 
 export const login = (credentials) => unwrap(api.post("/api/auth/login", credentials));
 export const registerUser = (payload) => unwrap(api.post("/api/auth/register", payload));

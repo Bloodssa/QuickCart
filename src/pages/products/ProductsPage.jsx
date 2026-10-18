@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import HomeLayout from "../../layouts/HomeLayout";
-import ProductSection from "../../components/sections/ProductSection";
-import ProductCardSkeleton from "../../components/ProductCardSkeleton";
-import { getProducts } from "../../lib/productsApi";
+import ProductSection from "../../components/products/ProductSection";
+import ProductCardSkeleton from "../../components/products/ProductCardSkeleton";
+import { getProducts } from "../../api/products";
 
 const PAGE_SIZE = 20;
 

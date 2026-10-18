@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api } from "./client";
 
 export const getProducts = async (params, signal) => {
     const { data } = await api.get("/api/products", {

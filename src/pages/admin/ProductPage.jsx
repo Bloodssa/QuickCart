@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useDeleteProduct, useProductList } from "../../hooks/useProducts";
-import { getErrorMessage } from "../../lib/api";
+import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { getErrorMessage } from "../../api/client";
+import { useDebouncedValue } from "../../hooks/useDebounce";
+import { formatPrice } from "../../lib/format";
+import { useDeleteProduct, useProducts } from "../../queries/products";
 
 const PAGE_SIZE = 10;
-
-const formatPrice = (price) =>
-    new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(price);
 
 function SkeletonRows() {
     return Array.from({ length: 5 }, (_, i) => (
@@ -20,10 +19,17 @@ function SkeletonRows() {
 }
 
 export default function AdminProductPage() {
-    const [search, setSearch] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const search = useDebouncedValue(searchInput.trim(), 400);
     const [page, setPage] = useState(1);
 
-    const { data, isPending, isError, error, isPlaceholderData } = useProductList({
+    const [lastSearch, setLastSearch] = useState(search);
+    if (search !== lastSearch) {
+        setLastSearch(search);
+        setPage(1);
+    }
+
+    const { data, isPending, error, isPlaceholderData } = useProducts({
         page,
         pageSize: PAGE_SIZE,
         search: search || undefined,
@@ -31,31 +37,28 @@ export default function AdminProductPage() {
     const remove = useDeleteProduct();
 
     const products = data?.products ?? [];
+    const totalResults = data?.totalResults ?? 0;
     const totalPages = data ? Math.max(1, Math.ceil(data.totalResults / data.pageSize)) : 1;
 
-    const handleSearch = (event) => {
-        event.preventDefault();
-        setSearch(new FormData(event.currentTarget).get("search").trim());
-        setPage(1);
-    };
+    const failure = error ?? remove.error;
+    const errorMessage = failure ? getErrorMessage(failure) : null;
 
     const handleDelete = (product) => {
         if (!window.confirm(`Delete "${product.name}"? Its images are removed too.`)) return;
 
         remove.mutate(product.id, {
-            // deleted the last row of a later page: step back so the page isn't empty
             onSuccess: () => {
                 if (products.length === 1 && page > 1) setPage((current) => current - 1);
             },
         });
-    };
+    }
 
     return (
         <div>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-heading">Products</h1>
-                    <p className="text-sm text-neutral-500">{data?.totalResults ?? 0} products</p>
+                    <p className="text-sm text-neutral-500">{isPending ? "Loading…" : `${totalResults} products`}</p>
                 </div>
                 <Link
                     to="/admin/products/new"
@@ -66,18 +69,31 @@ export default function AdminProductPage() {
                 </Link>
             </div>
 
-            <form onSubmit={handleSearch} className="relative mb-4 max-w-sm">
+            <div role="search" className="relative mb-4 max-w-sm">
                 <Search size={16} aria-hidden="true" className="absolute top-1/2 left-3 -translate-y-1/2 text-neutral-400" />
                 <input
-                    name="search"
-                    placeholder="Search products…"
-                    className="h-11 w-full rounded-md border border-gray-300 bg-white pr-3 pl-9 text-sm focus:border-accent-100 focus:ring-2 focus:ring-accent-100/20 focus:outline-none"
+                    value={searchInput}
+                    onChange={(event) => setSearchInput(event.target.value)}
+                    onKeyDown={(event) => event.key === "Escape" && setSearchInput("")}
+                    aria-label="Search products by name"
+                    placeholder="Search by product name…"
+                    className="h-11 w-full rounded-md border border-gray-300 bg-white pr-9 pl-9 text-sm focus:border-accent-100 focus:ring-2 focus:ring-accent-100/20 focus:outline-none"
                 />
-            </form>
+                {searchInput && (
+                    <button
+                        type="button"
+                        onClick={() => setSearchInput("")}
+                        aria-label="Clear search"
+                        className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-neutral-400 hover:text-neutral-700"
+                    >
+                        <X size={16} />
+                    </button>
+                )}
+            </div>
 
-            {(isError || remove.isError) && (
+            {errorMessage && (
                 <p role="alert" className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
-                    {getErrorMessage(error ?? remove.error)}
+                    {errorMessage}
                 </p>
             )}
 
@@ -95,10 +111,10 @@ export default function AdminProductPage() {
                     <tbody className={isPlaceholderData ? "opacity-60" : ""}>
                         {isPending && <SkeletonRows />}
 
-                        {!isPending && products.length === 0 && (
+                        {!isPending && !isPlaceholderData && products.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="px-4 py-10 text-center text-neutral-500">
-                                    No products found.
+                                    {search ? `No products match "${search}".` : "No products found."}
                                 </td>
                             </tr>
                         )}
@@ -107,8 +123,8 @@ export default function AdminProductPage() {
                             const cover = product.images.find((i) => i.isDefault) ?? product.images[0];
                             const stockColor =
                                 product.stockQuantity === 0 ? "text-red-600"
-                                : product.stockQuantity <= 5 ? "text-amber-600"
-                                : "text-neutral-700";
+                                    : product.stockQuantity <= 5 ? "text-amber-600"
+                                        : "text-neutral-700";
 
                             return (
                                 <tr key={product.id} className="border-b border-gray-200 last:border-0">

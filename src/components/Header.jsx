@@ -152,6 +152,7 @@ const Header = ({ subhead }) => {
                                         key={link.path}
                                         to={link.path}
                                         end
+                                        onClick={() => setMenuOpen(!isMenuOpen)}
                                         className={
                                             isLinkActive(link.path)
                                                 ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"

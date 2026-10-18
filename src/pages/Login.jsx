@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import AuthShell from "../components/AuthForm";
 import FormField from "../components/FormField";
 import { useAuth } from "../hooks/useAuth";
-import { getErrorMessage } from "../lib/api";
+import { getErrorMessage } from "../api/client";
 
 export default function Login() {
     const { login } = useAuth();

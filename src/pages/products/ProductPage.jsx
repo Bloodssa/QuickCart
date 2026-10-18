@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import HomeLayout from "../../layouts/HomeLayout";
-import { useProduct } from "../../hooks/useProducts";
+import { useProduct } from "../../queries/products";
 
 const ProductPage = () => {
     const { id } = useParams();

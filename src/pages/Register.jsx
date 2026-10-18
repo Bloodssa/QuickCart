@@ -3,8 +3,8 @@ import { useAuth } from "../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import AuthShell from "../components/AuthForm";
 import FormField from "../components/FormField";
-import { getErrorMessage } from "../lib/api";
-import { registerUser } from "../lib/authApi";
+import { getErrorMessage } from "../api/client";
+import { registerUser } from "../api/auth";
 
 export default function Register() {
     const navigate = useNavigate();
