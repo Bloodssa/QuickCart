@@ -30,7 +30,7 @@ const ProductCard = ({ product, onAddToCart }) => {
                         </span>
                     )}
 
-                    <h3 className="text-base font-bold text-neutral-900">
+                    <h3 className="line-clamp-2 min-h-12 text-base font-bold leading-6 text-neutral-900">
                         {name}
                     </h3>
 
@@ -41,18 +41,19 @@ const ProductCard = ({ product, onAddToCart }) => {
                     <p className={`mt-1 flex items-center gap-1 text-xs ${inStock ? "text-green-500" : "text-red-500"}`}>
                         {inStock ? "In Stock" : "Out of Stock"}
                     </p>
-
-                    <button
-                        type="button"
-                        disabled={!inStock}
-                        onClick={() => onAddToCart?.(id)}
-                        className="mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-accent-100 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
-                    >
-                        <ShoppingCart size={16} aria-hidden="true" />
-                        Add to cart
-                    </button>
                 </div>
             </Link>
+            <div className="mt-auto p-3 pt-0">
+                <button
+                    type="button"
+                    disabled={!inStock}
+                    onClick={() => onAddToCart?.(id)}
+                    className="flex w-full items-center justify-center gap-2 rounded-md bg-accent-100 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+                >
+                    <ShoppingCart size={16} aria-hidden="true" />
+                    Add to cart
+                </button>
+            </div>
         </article>
     );
 }

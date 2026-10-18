@@ -134,7 +134,7 @@ export default function AdminProductPage() {
                                                 {cover && <img src={cover.imageUrl} alt="" className="h-full w-full object-contain" />}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="truncate font-semibold text-heading">{product.name}</p>
+                                                <p className="line-clamp-2 font-semibold text-heading">{product.name}</p>
                                                 {product.isFeatured && (
                                                     <span className="rounded bg-accent-100/10 px-1.5 py-0.5 text-xs font-medium text-accent-100">
                                                         Featured

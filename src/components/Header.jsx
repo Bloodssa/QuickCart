@@ -1,8 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { UserRound, ShoppingCart, Search, Menu, X, CircleUserRound, ArrowLeft } from "lucide-react";
+import { UserRound, ShoppingCart, Menu, X, CircleUserRound, ArrowLeft } from "lucide-react";
+import SearchInput from "./SearchInput";
+import { useDebouncedValue } from "../hooks/useDebounce";
 import { useAuth } from "../hooks/useAuth";
 import { LogOut } from "lucide-react";
+
+const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Products", path: "/products" },
+    { name: "Deals", path: "/products?featured=true" },
+    { name: "New Arrivals", path: "/products?sort=newest" },
+    { name: "Best Sellers", path: "/products?sort=popular" },
+];
+
+const getActivePath = (pathname, search) => {
+    const current = new URLSearchParams(search);
+    let bestPath = null;
+    let bestScore = -1;
+
+    for (const link of navLinks) {
+        const [linkPathname, linkQuery = ""] = link.path.split("?");
+        if (linkPathname !== pathname) continue;
+
+        const required = [...new URLSearchParams(linkQuery)];
+        const matches = required.every(([key, value]) => current.get(key) === value);
+        if (!matches) continue;
+
+        if (required.length > bestScore) {
+            bestPath = link.path;
+            bestScore = required.length;
+        }
+    }
+
+    return bestPath;
+};
 
 const Header = ({ subhead }) => {
     const [isMenuOpen, setMenuOpen] = useState(false);
@@ -12,9 +44,38 @@ const Header = ({ subhead }) => {
     const isLoggedIn = status === "authenticated" && Boolean(user);
     const navigate = useNavigate();
     const location = useLocation();
-    const currentUrl = location.pathname + location.search;
 
-    const isLinkActive = (path) => currentUrl === path;
+    const activePath = getActivePath(location.pathname, location.search);
+    const isLinkActive = (path) => path === activePath;
+
+    const urlSearch = new URLSearchParams(location.search).get("search") ?? "";
+    const [searchTerm, setSearchTerm] = useState(urlSearch);
+    const debouncedTerm = useDebouncedValue(searchTerm.trim(), 400);
+    const [lastUrlSearch, setLastUrlSearch] = useState(urlSearch);
+    if (urlSearch !== lastUrlSearch) {
+        setLastUrlSearch(urlSearch);
+        if (urlSearch !== debouncedTerm) setSearchTerm(urlSearch);
+    }
+
+    useEffect(() => {
+        if (debouncedTerm === urlSearch) return;
+
+        const onProducts = location.pathname === "/products";
+        if (!debouncedTerm && !onProducts) return; // don't leave other pages when the box is empty
+
+        navigate(
+            debouncedTerm ? `/products?search=${encodeURIComponent(debouncedTerm)}` : "/products",
+            { replace: onProducts }
+        );
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedTerm]);
+
+    const handleSearch = (value) => {
+        const term = value.trim();
+        navigate(term ? `/products?search=${encodeURIComponent(term)}` : "/products");
+        setMenuOpen(false);
+    }
 
     const handleLogout = async () => {
         setProfileOpen(false);
@@ -28,14 +89,6 @@ const Header = ({ subhead }) => {
         }
     }
 
-    const navLinks = [
-        { name: "Home", path: "/" },
-        { name: "Products", path: "/products" },
-        { name: "Deals", path: "/products?featured=true" },
-        { name: "New Arrivals", path: "/products?sort=newest" },
-        { name: "Best Sellers", path: "/products?sort=popular" },
-    ];
-
     return (
         <>
             <header className="relative z-50 w-full border-b border-gray-300 bg-white">
@@ -44,14 +97,14 @@ const Header = ({ subhead }) => {
                         <Link to="/" className="font-sans font-extrabold text-lg md:text-2xl text-neutral-900 shrink-0"><span className="text-accent-300">Quick</span>Cart</Link>
 
                         {/* Desktop Input serach */}
-                        <div className="hidden md:flex relative items-center w-full mr-15">
-                            <Search className="absolute left-3 w-4 h-4 text-neutral-500" />
-                            <input
-                                type="text"
-                                placeholder="Search products, brands and more......"
-                                className="w-full border border-gray-300 rounded-md py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-900"
-                            />
-                        </div>
+                        <SearchInput
+                            className="hidden md:block w-full mr-15"
+                            value={searchTerm}
+                            onChange={setSearchTerm}
+                            onSubmit={handleSearch}
+                            placeholder="Search products, brands and more..."
+                            label="Search products"
+                        />
                     </div>
                     <div className="hidden md:flex items-center gap-1 shrink-0">
                         {status === "anonymous" && (
@@ -136,14 +189,14 @@ const Header = ({ subhead }) => {
                 {isMenuOpen && (
                     <div className="absolute left-0 top-full z-50 w-full md:hidden border-b border-gray-300 px-4 pt-3 pb-5 space-y-4 bg-white">
                         {/* Mobile search */}
-                        <div className="relative flex items-center w-full">
-                            <Search className="absolute left-3 w-4 h-4 text-neutral-500" />
-                            <input
-                                type="text"
-                                placeholder="Search products..."
-                                className="w-full border border-gray-300 rounded-md py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-900"
-                            />
-                        </div>
+                        <SearchInput
+                            className="w-full"
+                            value={searchTerm}
+                            onChange={setSearchTerm}
+                            onSubmit={handleSearch}
+                            placeholder="Search products..."
+                            label="Search products"
+                        />
 
                         {subhead && (
                             <nav className="flex flex-col space-y-2 pt-2 border-t border-gray-300 font-medium text-neutral-900">

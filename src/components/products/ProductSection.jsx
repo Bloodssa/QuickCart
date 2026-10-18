@@ -11,37 +11,50 @@ const ProductSection = ({
     columns = 4,
     isLoading = false,
     isError = false,
+    headerAction = null, // anything rendered on the right side of the header categoty filter
+    hideWhenEmpty = true,
+    emptyMessage = null,
+    className = "mt-12",
 }) => {
-    // a failed or empty section disappears instead of breaking the page
-    if (isError || (!isLoading && products.length === 0)) return null;
+    const isEmpty = !isLoading && products.length === 0;
+
+    if (hideWhenEmpty && (isError || isEmpty)) return null;
 
     return (
-        <section className="mt-12">
-            <div className="mb-6 flex itemsend justify-between gap-4">
+        <section className={className}>
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h2 className="font-bold text-2xl md:text-3xl">{title}</h2>
                     {subtitle && <p className="mt-1 text-neutral-500">{subtitle}</p>}
                 </div>
 
-                {viewAllLink && (
-                    <Link
-                        to={viewAllLink}
-                        className="flex shrink-0 items-center gap-1 text-sm font-semibold text-accent-100 transition-colors hover:text-accent-300"
-                    >
-                        View all
-                        <ArrowRight size={16} aria-hidden="true" />
-                    </Link>
+                {(headerAction || viewAllLink) && (
+                    <div>
+                        {headerAction}
+
+                        {viewAllLink && (
+                            <Link
+                                to={viewAllLink}
+                                className="flex shrink-0 items-center gap-1 text-sm font-semibold text-accent-100 transition-colors hover:text-accent-300"
+                            >
+                                View all
+                                <ArrowRight size={16} aria-hidden="true" />
+                            </Link>
+                        )}
+                    </div>
                 )}
             </div>
-
-            {isLoading ? (
+            
+           {isLoading ? (
                 <ProductGridSkeleton columns={columns} />
-            ) : (
-                <ProductGrid 
+            ) : products.length > 0 ? (
+                <ProductGrid
                     products={products}
                     onAddToCart={onAddToCart}
                     columns={columns}
                 />
+            ) : (
+                emptyMessage
             )}
         </section>
     );
