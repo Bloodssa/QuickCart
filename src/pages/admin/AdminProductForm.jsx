@@ -5,7 +5,7 @@ import { getErrorMessage } from "../../api/client";
 import { useCategories } from "../../queries/categories";
 import { useDeleteProductImage, useProduct, useSaveProduct, useSetDefaultImage } from "../../queries/products";
 
-export default function AdminProductFormPage() {
+export default function AdminProductForm() {
     const { id } = useParams();
     const isEdit = Boolean(id);
     const navigate = useNavigate();

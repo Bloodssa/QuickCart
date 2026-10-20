@@ -11,7 +11,6 @@ import {
     Users,
     Percent,
     TrendingUp,
-    UserCog,
     UserRound,
 } from "lucide-react";
 
@@ -43,7 +42,6 @@ const sidebarSections = [
     {
         title: "Settings",
         items: [
-            { name: "Staff Accounts", path: "/admin/staff", icon: UserCog, adminOnly: true },
             { name: "Profile", path: "/admin/profile", icon: UserRound },
         ],
     }

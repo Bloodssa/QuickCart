@@ -79,3 +79,17 @@ export function getErrorMessage(
     const firstValidation = data?.errors && Object.values(data.errors).flat()[0]; // ASP.NET validation
     return firstValidation ?? data?.title ?? fallback;
 }
+
+export function extractFieldErrors(err) {
+    const errors = err?.response?.data?.errors ?? err?.data?.errors;
+    if (!errors || typeof errors !== "object") return {};
+
+    return Object.fromEntries(
+        Object.entries(errors)
+            .filter(([key]) => key) // skip model-level errors with an empty key
+            .map(([key, messages]) => [
+                key.charAt(0).toLowerCase() + key.slice(1),
+                Array.isArray(messages) ? messages[0] : messages,
+            ])
+    );
+}

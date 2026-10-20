@@ -1,5 +1,5 @@
-import HomeLayout from "../layouts/HomeLayout";
-import { useAuth } from "../hooks/useAuth";
+import HomeLayout from "../../layouts/HomeLayout";
+import { useAuth } from "../../hooks/useAuth";
 
 const Cart = () => {
     const { user } = useAuth();

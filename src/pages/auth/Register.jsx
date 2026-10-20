@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
-import AuthShell from "../components/AuthForm";
-import FormField from "../components/FormField";
-import { getErrorMessage } from "../api/client";
-import { registerUser } from "../api/auth";
+import AuthShell from "../../components/form/AuthForm";
+import FormField from "../../components/form/FormField";
+import { getErrorMessage, extractFieldErrors } from "../../api/client";
+import { registerUser } from "../../api/auth";
 
 export default function Register() {
     const navigate = useNavigate();
     const { login } = useAuth();
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [fieldErorrs, setFieldErrors] = useState({});
+
+    function clearFieldErrors(event) {
+        const { name } = event.target;
+        setFieldErrors((prev) => (prev[name] ? {...prev, [name]: undefined} : prev));
+    }
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -46,7 +52,12 @@ export default function Register() {
 
             navigate("/", { replace: true, state: { registered: true } });
         } catch (err) {
-            setError(getErrorMessage(err));
+            const serverErrors = extractFieldErrors(err);
+            if (Object.keys(serverErrors)) {
+                setFieldErrors(serverErrors);
+            } else {
+                setError(getErrorMessage(err));
+            }
         } finally {
             setSubmitting(false);
         }
@@ -65,28 +76,30 @@ export default function Register() {
                 </>
             }
         >
-            <form onSubmit={handleSubmit} className="space-y-5">
-                <FormField label="Full name" id="fullName" placeholder="John Doe" maxLength={150} autoFocus required />
-                <FormField label="Username" id="username" placeholder="jdoe" autoComplete="username" minLength={3} maxLength={50} required />
-                <FormField label="Email" id="email" type="email" placeholder="jdoe@gmail.com" maxLength={255} required />
+            <form onSubmit={handleSubmit}  onChange={clearFieldErrors} className="space-y-5">
+                <FormField label="Full name" error={fieldErorrs?.fullName} id="fullName" placeholder="John Doe" maxLength={150} autoFocus  />
+                <FormField label="Username" error={fieldErorrs?.username} id="username" placeholder="jdoe" autoComplete="username" minLength={3} maxLength={50}  />
+                <FormField label="Email" error={fieldErorrs?.email} id="email" type="email" placeholder="jdoe@gmail.com" maxLength={255}  />
                 <FormField
                     label="Mobile number"
+                    error={fieldErorrs?.phone}
                     id="phone"
                     type="tel"
                     placeholder="09171234567"
                     pattern="(\+63|0)9[0-9]{9}"
                     title="Philippine mobile number, e.g. 09171234567 or +639171234567"
-                    required
+                    
                 />
                 <FormField
                     label="Password"
+                    error={fieldErorrs?.password}
                     id="password"
                     type="password"
                     placeholder="********"
                     autoComplete="new-password"
                     minLength={8}
                     hint="8+ characters, with a letter and a number"
-                    required
+                    
                 />
                 <FormField
                     label="Confirm password"
@@ -94,7 +107,7 @@ export default function Register() {
                     type="password"
                     placeholder="********"
                     autoComplete="new-password"
-                    required
+                    error={fieldErorrs?.confirmPassword}
                 />
                 {error && (
                     <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">

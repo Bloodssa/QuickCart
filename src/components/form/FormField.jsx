@@ -1,7 +1,7 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
-export default function FormField({ label, id, hint, type = "text", ...inputProps }) {
+export default function FormField({ label, id, hint, error = null, type = "text", ...inputProps }) {
     const [visible, setVisible] = useState(false);
     const isPassword = type === "password";
 
@@ -29,7 +29,13 @@ export default function FormField({ label, id, hint, type = "text", ...inputProp
                     </button>
                 )}
             </div>
-            {hint && <p className="mt-1.5 text-xs text-neutral-500">{hint}</p>}
+            {error ? (
+                <p id={`${id}-error`} role="alert" className="mt-1.5 text-xs text-red-600">
+                    {error}
+                </p>
+            ) : (
+                hint && <p className="mt-1.5 text-xs text-neutral-500">{hint}</p>
+            )}
         </div>
     );
 }

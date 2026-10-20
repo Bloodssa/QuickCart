@@ -18,7 +18,7 @@ function SkeletonRows() {
     ));
 }
 
-export default function AdminProductPage() {
+export default function Products() {
     const [searchInput, setSearchInput] = useState("");
     const search = useDebouncedValue(searchInput.trim(), 400);
     const [page, setPage] = useState(1);

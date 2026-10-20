@@ -90,7 +90,7 @@ const ProductsPage = () => {
                 isLoading={loading}
                 columns={4}
                 hideWhenEmpty={false}
-                className="mt-10"
+                className="mt-2"
                 headerAction={
                     <CategoryFilter
                         categories={categories}
