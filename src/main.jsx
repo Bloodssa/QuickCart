@@ -7,6 +7,7 @@ import './index.css'
 import AuthProvider from './context/AuthProvider.jsx'
 import App from './App.jsx'
 import { queryClient } from './queries/queryClient.js';
+import { Toaster } from 'sonner';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')).render(
           <App />
         </AuthProvider>
       </BrowserRouter>
+      <Toaster richColors position='top-right' closeButton />
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   </StrictMode>,

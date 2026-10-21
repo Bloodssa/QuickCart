@@ -5,11 +5,10 @@ import CategoryGrid from "../components/home/CategoryGrid"
 import PromoBanner from "../components/home/PromoBanner";
 import CollectionTiles from "../components/home/CollectionTiles";
 import ProductShelf from "../components/products/ProductShelf";
+import { useAddToCartHandler } from "../hooks/useAddToCartHandler";
 
 const HomePage = () => {
-    const handleAddToCart = (productId) => {
-        console.log("Add product to cart:", productId);
-    };
+    const handleAddToCart = useAddToCartHandler();
 
     return (
         <HomeLayout>

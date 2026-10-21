@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { UserRound, ShoppingCart, Menu, X, CircleUserRound, ArrowLeft } from "lucide-react";
+import { UserRound, Menu, X, CircleUserRound, ArrowLeft } from "lucide-react";
 import SearchInput from "./SearchInput";
 import { useDebouncedValue } from "../hooks/useDebounce";
 import { useAuth } from "../hooks/useAuth";
 import { LogOut } from "lucide-react";
+import CartLink from "./cart/CartLink";
 
 const navLinks = [
     { name: "Home", path: "/" },
@@ -123,9 +124,7 @@ const Header = ({ subhead }) => {
                                 Back to Dashboard
                             </Link>
                         )}
-                        <Link to="/cart" className="relative px-3 py-2 rounded-md hover:bg-accent-100 hover:text-white transition-colors duration-250 group flex items-center justify-center" aria-label="View Shopping Cart">
-                            <ShoppingCart className="w-5 h-5 text-black group-hover:text-white transition-colors" />
-                        </Link>
+                        <CartLink />
 
                         {isLoggedIn && (
                             <div className="relative">
@@ -173,9 +172,7 @@ const Header = ({ subhead }) => {
 
                     {/* Mobile menu */}
                     <div className="flex items-center gap-2 md:hidden">
-                        <Link to="/cart">
-                            <ShoppingCart className="w-5 h-5" />
-                        </Link>
+                        <CartLink variant="mobile" />
                         <button
                             onClick={() => setMenuOpen(!isMenuOpen)}
                             className="p-2 text-black rounded-md hover:bg-gray-100 focus:outline-none"
