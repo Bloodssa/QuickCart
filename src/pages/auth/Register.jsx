@@ -15,7 +15,7 @@ export default function Register() {
 
     function clearFieldErrors(event) {
         const { name } = event.target;
-        setFieldErrors((prev) => (prev[name] ? {...prev, [name]: undefined} : prev));
+        setFieldErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
     }
 
     async function handleSubmit(event) {
@@ -41,6 +41,7 @@ export default function Register() {
                 email: form.get("email").trim(),
                 phone: form.get("phone").trim(),
                 password,
+                confirmPassword: form.get("confirmPassword"),
             };
 
             await registerUser(payload);
@@ -76,10 +77,10 @@ export default function Register() {
                 </>
             }
         >
-            <form onSubmit={handleSubmit}  onChange={clearFieldErrors} className="space-y-5">
-                <FormField label="Full name" error={fieldErorrs?.fullName} id="fullName" placeholder="John Doe" maxLength={150} autoFocus  />
-                <FormField label="Username" error={fieldErorrs?.username} id="username" placeholder="jdoe" autoComplete="username" minLength={3} maxLength={50}  />
-                <FormField label="Email" error={fieldErorrs?.email} id="email" type="email" placeholder="jdoe@gmail.com" maxLength={255}  />
+            <form onSubmit={handleSubmit} onChange={clearFieldErrors} className="space-y-5">
+                <FormField label="Full name" error={fieldErorrs?.fullName} id="fullName" placeholder="John Doe" maxLength={150} autoFocus />
+                <FormField label="Username" error={fieldErorrs?.username} id="username" placeholder="jdoe" autoComplete="username" minLength={3} maxLength={50} />
+                <FormField label="Email" error={fieldErorrs?.email} id="email" type="email" placeholder="jdoe@gmail.com" maxLength={255} />
                 <FormField
                     label="Mobile number"
                     error={fieldErorrs?.phone}
@@ -88,7 +89,7 @@ export default function Register() {
                     placeholder="09171234567"
                     pattern="(\+63|0)9[0-9]{9}"
                     title="Philippine mobile number, e.g. 09171234567 or +639171234567"
-                    
+
                 />
                 <FormField
                     label="Password"
@@ -99,7 +100,7 @@ export default function Register() {
                     autoComplete="new-password"
                     minLength={8}
                     hint="8+ characters, with a letter and a number"
-                    
+
                 />
                 <FormField
                     label="Confirm password"
