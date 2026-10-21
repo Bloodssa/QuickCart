@@ -5,6 +5,7 @@ import ProductSection from "../../components/products/ProductSection";
 import CategoryFilter from "../../components/CategoryFilter";
 import { getProducts } from "../../api/products";
 import { useCategories } from "../../queries/categories";
+import { useAddToCartHandler } from "../../hooks/useAddToCartHandler";
 
 const PAGE_SIZE = 20;
 
@@ -75,6 +76,9 @@ const ProductsPage = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    // add to cart 
+    const handleAddToCart = useAddToCartHandler();
+
     return (
         <HomeLayout>
             {error && (
@@ -88,6 +92,7 @@ const ProductsPage = () => {
                 subtitle={loading ? "Loading…" : error ? null : `${data.totalResults} products`}
                 products={data.products}
                 isLoading={loading}
+                onAddToCart={handleAddToCart}
                 columns={4}
                 hideWhenEmpty={false}
                 className="mt-2"
