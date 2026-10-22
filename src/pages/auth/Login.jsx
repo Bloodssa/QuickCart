@@ -3,13 +3,15 @@ import { Link } from "react-router-dom";
 import AuthShell from "../../components/form/AuthForm";
 import FormField from "../../components/form/FormField";
 import { useAuth } from "../../hooks/useAuth";
-import { getErrorMessage } from "../../api/client";
+import { getErrorMessage, getRetryAfter } from "../../api/client";
+import { useCountdown } from "../../hooks/useCountdown";
 
 export default function Login() {
     const { login } = useAuth();
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [password, setPassword] = useState("");
+    const [cooldown, setCooldown] = useCountdown();
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -20,6 +22,13 @@ export default function Login() {
         try {
             await login({ username: form.get("username").trim(), password: form.get("password") });
         } catch (err) {
+            const retryAfter = getRetryAfter(err);
+            if (retryAfter) {
+                setError(null);
+                setPassword("");
+                setCooldown(retryAfter);
+                return;
+            }
             setError(getErrorMessage(err));
             setPassword("");
         } finally {
@@ -33,7 +42,7 @@ export default function Login() {
             subtitle="Log in to continue shopping."
             footer={
                 <>
-                    Dont have an account?  
+                    Dont have an account? {" "}
                     <Link to="/register" className="font-semibold text-heading hover:text-accent-100">
                         Register here
                     </Link>
@@ -41,6 +50,11 @@ export default function Login() {
             }
         >
             <form onSubmit={handleSubmit} className="space-y-5">
+                {cooldown > 0 && (
+                    <p role="alert" className="text-center rounded-md text-red-500 border border-red-500 bg-red-100 px-2 py-3 text-sm">
+                        Too many attempts. Try again in {cooldown} second{cooldown === 1 ? "" : "s"}.
+                    </p>
+                )}
                 {error && (
                     <p role="alert" className="text-center rounded-md text-red-500 border border-red-500 bg-red-100 px-2 py-3 text-sm">
                         {error}
@@ -58,10 +72,14 @@ export default function Login() {
                     required
                 />
                 <button
-                    disabled={submitting}
+                    disabled={submitting || cooldown > 0}
                     className="h-12 w-full rounded-md bg-accent-100 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
                 >
-                    {submitting ? "Logging in…" : "Log in"}
+                    {cooldown > 0
+                        ? `Try again in ${cooldown}s`
+                        : submitting
+                            ? "Logging in…"
+                            : "Log in"}
                 </button>
             </form>
         </AuthShell>

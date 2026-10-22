@@ -3,7 +3,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import AuthShell from "../../components/form/AuthForm";
 import FormField from "../../components/form/FormField";
-import { getErrorMessage, extractFieldErrors } from "../../api/client";
+import { useCountdown } from "../../hooks/useCountdown";
+import { getErrorMessage, extractFieldErrors, getRetryAfter } from "../../api/client";
 import { registerUser } from "../../api/auth";
 
 export default function Register() {
@@ -12,6 +13,7 @@ export default function Register() {
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [fieldErorrs, setFieldErrors] = useState({});
+    const [cooldown, setCooldown] = useCountdown();
 
     function clearFieldErrors(event) {
         const { name } = event.target;
@@ -53,10 +55,20 @@ export default function Register() {
 
             navigate("/", { replace: true, state: { registered: true } });
         } catch (err) {
+            const retryAfter = getRetryAfter(err);
+            if (retryAfter) {
+                setFieldErrors({});
+                setError(null);
+                setCooldown(retryAfter);
+                return;
+            }
+
             const serverErrors = extractFieldErrors(err);
-            if (Object.keys(serverErrors)) {
+            if (Object.keys(serverErrors).length > 0) {
                 setFieldErrors(serverErrors);
+                setError(null);
             } else {
+                setFieldErrors({});
                 setError(getErrorMessage(err));
             }
         } finally {
@@ -78,7 +90,17 @@ export default function Register() {
             }
         >
             <form onSubmit={handleSubmit} onChange={clearFieldErrors} className="space-y-5">
-                <FormField label="Full name" error={fieldErorrs?.fullName} id="fullName" placeholder="John Doe" maxLength={150} autoFocus />
+                {cooldown > 0 && (
+                    <p role="alert" className="text-center rounded-md text-red-500 border border-red-500 bg-red-100 px-2 py-3 text-sm">
+                        Too many attempts. Try again in {cooldown} second{cooldown === 1 ? "" : "s"}.
+                    </p>
+                )}
+                {error && (
+                    <p role="alert" className="text-center rounded-md text-red-500 border border-red-500 bg-red-100 px-2 py-3 text-sm">
+                        {error}
+                    </p>
+                )}
+                <FormField label="Full name" error={fieldErorrs?.fullName} id="fullName" placeholder="John Doe" maxLength={150} autoFocus required />
                 <FormField label="Username" error={fieldErorrs?.username} id="username" placeholder="jdoe" autoComplete="username" minLength={3} maxLength={50} />
                 <FormField label="Email" error={fieldErorrs?.email} id="email" type="email" placeholder="jdoe@gmail.com" maxLength={255} />
                 <FormField
@@ -110,16 +132,16 @@ export default function Register() {
                     autoComplete="new-password"
                     error={fieldErorrs?.confirmPassword}
                 />
-                {error && (
-                    <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
-                        {error}
-                    </p>
-                )}
                 <button
-                    disabled={submitting}
+                    disabled={submitting || cooldown > 0}
                     className="h-12 w-full rounded-md bg-accent-100 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
                 >
-                    {submitting ? "Creating account…" : "Register"}
+                    {cooldown > 0
+                        ? `Try again in ${cooldown}s`
+                        : submitting
+                            ? "Creating account…"
+                            : "Register"
+                    }
                 </button>
             </form>
         </AuthShell>

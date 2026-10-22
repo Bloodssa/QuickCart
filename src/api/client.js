@@ -2,10 +2,12 @@ import axios from "axios";
 import { clearSession, getAccessToken, saveSession } from "./session";
 
 export const API_URL = import.meta.env.VITE_API_URL;
+export const API_VERSION = "v1";
+export const API_BASE = `${API_URL}/api/${API_VERSION}`
 export const AUTH_LOGOUT_EVENT = "auth:logout";
 
 // withCredentials lets the browser send and receive the httpOnly refresh cookie across origins
-export const api = axios.create({ baseURL: API_URL, timeout: 15000, withCredentials: true });
+export const api = axios.create({ baseURL: API_BASE, timeout: 15000, withCredentials: true });
 export const unwrap = (request) => request.then((response) => response.data);
 
 api.interceptors.request.use((config) => {
@@ -14,13 +16,13 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-const AUTH_ROUTES = ["/api/auth/login", "/api/auth/register", "/api/auth/refresh"];
+const AUTH_ROUTES = ["/auth/login", "/auth/register", "/auth/refresh"];
 let refreshing = null;
 
 export function refreshSession() {
     if (!refreshing) {
         refreshing = axios
-            .post(`${API_URL}/api/auth/refresh`, null, {
+            .post(`${API_BASE}/auth/refresh`, null, {
                 withCredentials: true,
             })
             .then(({ data }) => saveSession(data))
@@ -72,6 +74,14 @@ export function getErrorMessage(
 )
 {
     if (error?.code === "ERR_NETWORK") return "Cannot reach server. Check your connection.";
+
+    if (error?.response?.status === 429) {
+        const seconds = Number(error.response.headers?.["retry-after"]);
+        return seconds
+            ? `Too many attempts. Try again in ${seconds} seconds.`
+            : "Too many attempts. Please try again in a minute.";
+    }
+
     const data = error?.response?.data;
 
     if (typeof data?.message === "string") return data.message; // services error: 401, 403, 429
@@ -92,4 +102,10 @@ export function extractFieldErrors(err) {
                 Array.isArray(messages) ? messages[0] : messages,
             ])
     );
+}
+
+export function getRetryAfter(error) {
+    if (error?.response?.status !== 429) return null;
+    const seconds = Number(error.response.headers?.["retry-after"]);
+    return seconds > 0 ? seconds : 60;
 }

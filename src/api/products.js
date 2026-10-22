@@ -1,7 +1,7 @@
 import { api } from "./client";
 
 export const getProducts = async (params, signal) => {
-    const { data } = await api.get("/api/products", {
+    const { data } = await api.get("/products", {
         params,
         signal,
     });
@@ -10,7 +10,7 @@ export const getProducts = async (params, signal) => {
 };
 
 export const getProductById = async (id, signal) => {
-    const { data } = await api.get(`/api/products/${id}`, { signal });
+    const { data } = await api.get(`/products/${id}`, { signal });
     return data;
 };
 
@@ -36,19 +36,19 @@ function toFormData({
 }
 
 export const createProduct = async (values) => {
-    const { data } = await api.post("/api/products", toFormData(values));
+    const { data } = await api.post("/products", toFormData(values));
     return data;
 };
 
 export const updateProduct = async (id, values) => {
     const { data } = await api.put(
-        `/api/products/${id}`,
+        `/products/${id}`,
         toFormData(values)
     );
 
     return data;
 };
 
-export const deleteProduct = (id) => api.delete(`/api/products/${id}`);
-export const deleteProductImage = (productId, imageId) => api.delete(`/api/products/${productId}/images/${imageId}`);
-export const setDefaultProductImage = (productId, imageId) => api.put(`/api/products/${productId}/images/${imageId}/default`);
+export const deleteProduct = (id) => api.delete(`/products/${id}`);
+export const deleteProductImage = (productId, imageId) => api.delete(`/products/${productId}/images/${imageId}`);
+export const setDefaultProductImage = (productId, imageId) => api.put(`/products/${productId}/images/${imageId}/default`);
