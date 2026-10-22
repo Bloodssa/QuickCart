@@ -7,6 +7,7 @@ import CartSummary from "../../components/cart/CartSummary";
 import Skeleton from "../../components/ui/Skeleton";
 import HomeLayout from "../../layouts/HomeLayout";
 import { useCart, useRemoveCartItem, useUpdateCartItem } from "../../queries/cart";
+import RelatedProducts from "../../components/products/RelatedProducts";
 
 const Cart = () => {
     const { data: cart, isPending, error, refetch } = useCart();
@@ -83,6 +84,12 @@ const Cart = () => {
                     <CartSummary totalItems={cart.totalItems} subTotal={cart.subTotal} />
                 </div>
             )}
+
+            <RelatedProducts 
+                title="You may also like" 
+                params={{ sort: "popular" }} 
+                excludeIds={cart?.items.map((item) => item.productId) ?? []}
+            />
         </HomeLayout>
     );
 };
