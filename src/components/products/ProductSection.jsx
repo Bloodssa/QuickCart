@@ -7,7 +7,6 @@ const ProductSection = ({
     subtitle,
     products = [],
     viewAllLink,
-    onAddToCart,
     columns = 4,
     isLoading = false,
     isError = false,
@@ -50,7 +49,6 @@ const ProductSection = ({
             ) : products.length > 0 ? (
                 <ProductGrid
                     products={products}
-                    onAddToCart={onAddToCart}
                     columns={columns}
                 />
             ) : (

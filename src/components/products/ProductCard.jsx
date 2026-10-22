@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { formatPrice } from "../../lib/format";
-import { ShoppingCart } from "lucide-react";
 
-const ProductCard = ({ product, onAddToCart }) => {
+const ProductCard = ({ product }) => {
     const { id, name, categoryName, price, stockQuantity, images } = product;
     const cover = images?.find((image) => image.isDefault) ?? images[0]?.[0];
     const inStock = stockQuantity > 0;
@@ -10,13 +9,13 @@ const ProductCard = ({ product, onAddToCart }) => {
     return (
         <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-md border border-gray-300 bg-white">
             <Link to={`/products/${id}`} className="min-w-0 overflow-hidden rounded-md bg-white">
-                <div className="m-2 flex aspect-square items-center justify-center overflow-hidden rounded-md">
+                <div className="flex aspect-square items-center justify-center overflow-hidden mb-2">
                     {cover ? (
                         <img
                             src={cover.imageUrl}
                             alt={name}
                             loading="lazy"
-                            className="h-full w-full object-contain p-2"
+                            className="h-full w-full object-contain"
                         />
                     ) : (
                         <p className="text-sm text-neutral-500">No image available</p>
@@ -34,7 +33,7 @@ const ProductCard = ({ product, onAddToCart }) => {
                         {name}
                     </h3>
 
-                    <p className="mt-4 text-base font-bold text-neutral-900">
+                    <p className="text-base  mt-2 font-bold text-neutral-900">
                         {formatPrice(price)}
                     </p>
 
@@ -43,17 +42,6 @@ const ProductCard = ({ product, onAddToCart }) => {
                     </p>
                 </div>
             </Link>
-            <div className="mt-auto p-3 pt-0">
-                <button
-                    type="button"
-                    disabled={!inStock}
-                    onClick={() => onAddToCart?.(id)}
-                    className="flex w-full items-center justify-center gap-2 rounded-md bg-accent-100 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
-                >
-                    <ShoppingCart size={16} aria-hidden="true" />
-                    Add to cart
-                </button>
-            </div>
         </article>
     );
 }

@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import HomeLayout from "../../layouts/HomeLayout";
 import ProductSection from "../../components/products/ProductSection";
 import CategoryFilter from "../../components/CategoryFilter";
-import { getProducts } from "../../api/products";
 import { useCategories } from "../../queries/categories";
-import { useAddToCartHandler } from "../../hooks/useAddToCartHandler";
+import { useProducts } from "../../queries/products";
+import { getErrorMessage } from "../../api/client";
 
 const PAGE_SIZE = 20;
 
@@ -17,10 +16,6 @@ const sortTitle = {
 
 const ProductsPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [data, setData] = useState({ products: [], totalResults: 0 });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
     const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
     const sort = searchParams.get("sort");
@@ -29,37 +24,13 @@ const ProductsPage = () => {
     const search = searchParams.get("search");
     const page = Number(searchParams.get("page") ?? 1);
 
-    useEffect(() => {
-        const controller = new AbortController();
+    const { data, isPending, isFetching, error } = useProducts({
+        sort, categoryId, featured, search, page, pageSize: PAGE_SIZE,
+    });
 
-        const load = async () => {
-            setLoading(true);
-            setError(null);
-
-            try {
-                const result = await getProducts({
-                    sort, categoryId, featured, search, page, pageSize: PAGE_SIZE
-                }, controller.signal);
-
-                setData(result);
-            } catch (error) {
-                if (error.name !== "CanceledError" && error.name !== "AbortError") {
-                    setError("Failed to load products.");
-                }
-            } finally {
-                if (!controller.signal.aborted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        load();
-        return () => controller.abort();
-    }, [sort, categoryId, featured, search, page]);
-
-    const title = categoryId ? data.products[0]?.category ?? "Category" : featured ? "Deals" : sortTitle[sort?.toLocaleLowerCase()] ?? "All Products";
-
-    const totalPages = Math.ceil(data.totalResults / PAGE_SIZE);
+    const products = data?.products ?? [];
+    const title = categoryId ? products[0]?.category ?? "Category" : featured ? "Deals" : sortTitle[sort?.toLocaleLowerCase()] ?? "All Products";
+    const totalPages = Math.ceil(products.totalResults / PAGE_SIZE);
 
     const handleCategoryChange = (value) => {
         const next = new URLSearchParams(searchParams);
@@ -76,24 +47,20 @@ const ProductsPage = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    // add to cart 
-    const handleAddToCart = useAddToCartHandler();
-
     return (
         <HomeLayout>
             {error && (
                 <p role="alert" className="mt-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
-                    {error}
+                    {getErrorMessage(error)}
                 </p>
             )}
 
             <ProductSection
                 title={title}
-                subtitle={loading ? "Loading…" : error ? null : `${data.totalResults} products`}
-                products={data.products}
-                isLoading={loading}
-                onAddToCart={handleAddToCart}
-                columns={4}
+                subtitle={isFetching ? "Loading…" : error ? null : `${data.totalResults} products`}
+                products={products}
+                isLoading={isPending}
+                columns={5}
                 hideWhenEmpty={false}
                 className="mt-2"
                 headerAction={
@@ -114,7 +81,7 @@ const ProductsPage = () => {
                 }
             />
 
-            {!loading && !error && totalPages > 1 && (
+            {!isPending && !error && totalPages > 1 && (
                 <div className="my-8 flex items-center justify-center gap-2">
                     <button
                         disabled={page <= 1}
