@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import PageLoader from "./PageLoader";
+import { getRedirectPath } from "../lib/redirect";
 
 // auth users only
 export function ProtectedRoute()
@@ -28,18 +29,16 @@ export function AdminRoute()
 }
 
 // login/register
-export function GuestRoute() 
-{
-  const { status, isAdmin } = useAuth();
-  const location = useLocation();
+export function GuestRoute() {
+    const { status, isAdmin } = useAuth();
+    const location = useLocation();
 
-  if (status === "loading") return <PageLoader />;
-  if (status === "authenticated") {
-    const from = location.state?.from;
-    const target = from ? `${from.pathname}${from.search}` : isAdmin ? "/admin" : "/";
+    if (status === "loading") return <PageLoader />;
 
-    return <Navigate to={target} replace />
-  }
+    if (status === "authenticated") {
+        const fallback = isAdmin ? "/admin" : "/";
+        return <Navigate to={getRedirectPath(location.state?.from, fallback)} replace />;
+    }
 
-  return <Outlet />
+    return <Outlet />;
 }

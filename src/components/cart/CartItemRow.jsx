@@ -1,16 +1,47 @@
+import { useEffect, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatPrice } from "../../lib/format";
 import QuantityStepper from "./QuantityStepper";
+import Checkbox from "../ui/Checkbox";
 
 const MAX_PER_ITEM = 99;
+const STEPPER_DEBOUNCE_MS = 600;
 
-export default function CartItemRow({ 
-    item, 
-    busy, 
-    onQuantityChange, 
+export default function CartItemRow({
+    item,
+    selected,
+    busy,
+    onToggleSelect,
+    onQuantityChange,
     onRemove
 }) {
+    const [quantity, setQuantity] = useState(item.quantity);
+    const timerRef = useRef(null);
+    const itemRef = useRef(item);
+
+    useEffect(() => {
+        itemRef.current = item;
+    });
+
+    useEffect(() => {
+        if (!timerRef.current) setQuantity(item.quantity);
+    }, [item.quantity]);
+
+    // dont start the timer after the row is gone
+    useEffect(() => () => clearTimeout(timerRef.current), []);
+
+    function handleQuantityChange(next) {
+        setQuantity(next);
+
+        clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+            timerRef.current = null;
+            const current = itemRef.current;
+            if (next !== current.quantity) onQuantityChange(current, next);
+        }, STEPPER_DEBOUNCE_MS);
+    }
+
     const maxQuantity = Math.min(item.stockQuantity, MAX_PER_ITEM);
     const imageSrc = item.imageUrl;
 
@@ -19,9 +50,17 @@ export default function CartItemRow({
 
     return (
         <li className="flex gap-4 py-5">
+            <Checkbox
+                checked={selected}
+                disabled={outOfStock || busy}
+                onChange={() => onToggleSelect(item.id)}
+                className="self-center"
+                aria-label={`Select ${item.productName}`}
+            />
+
             <Link
                 to={`/products/${item.productId}`}
-                className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-50"
+                className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-300"
             >
                 {imageSrc ? (
                     <img src={imageSrc} alt={item.productName} className="h-full w-full object-contain p-1" />
@@ -39,7 +78,8 @@ export default function CartItemRow({
                         <p className="mt-0.5 text-sm text-neutral-900">{formatPrice(item.unitPrice)} each</p>
                         <p className={`mt-0.5 text-sm ${item.stockQuantity <= 10 ? "text-red-500 font-semibold" : "text-neutral-500"}`}>Stocks left: {item.stockQuantity} </p>
                     </div>
-                    <p className="shrink-0 font-bold text-heading">{formatPrice(item.subTotal)}</p>
+                    {/* <p className="shrink-0 font-bold text-heading">{formatPrice(item.subTotal)}</p> */}
+                    <p className="shrink-0 font-bold text-heading">{formatPrice(item.unitPrice * quantity)}</p>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -47,10 +87,10 @@ export default function CartItemRow({
                         <p className="text-sm font-medium text-red-600">Out of stock: remove it to continue</p>
                     ) : (
                         <QuantityStepper
-                            value={item.quantity}
+                            value={quantity}
                             max={maxQuantity}
-                            disabled={busy}
-                            onChange={(quantity) => onQuantityChange(item, quantity)}
+                            disabled={outOfStock}
+                            onChange={handleQuantityChange}
                         />
                     )}
                     <button
