@@ -8,8 +8,10 @@ import Skeleton from "../../components/ui/Skeleton";
 import HomeLayout from "../../layouts/HomeLayout";
 import { useCart, useRemoveCartItem, useUpdateCartItem } from "../../queries/cart";
 import RelatedProducts from "../../components/products/RelatedProducts";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const Cart = () => {
+    useDocumentTitle("Cart");
     const { data: cart, isPending, error, refetch } = useCart();
 
     const updateItem = useUpdateCartItem();

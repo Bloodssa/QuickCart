@@ -5,6 +5,7 @@ import CategoryFilter from "../../components/CategoryFilter";
 import { useCategories } from "../../queries/categories";
 import { useProducts } from "../../queries/products";
 import { getErrorMessage } from "../../api/client";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const PAGE_SIZE = 20;
 
@@ -15,6 +16,7 @@ const sortTitle = {
 };
 
 const ProductsPage = () => {
+    useDocumentTitle("QuickCart | Products");
     const [searchParams, setSearchParams] = useSearchParams();
     const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 

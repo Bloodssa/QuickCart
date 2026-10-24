@@ -5,6 +5,7 @@ import FormField from "../../components/form/FormField";
 import { useAuth } from "../../hooks/useAuth";
 import { getErrorMessage, getRetryAfter } from "../../api/client";
 import { useCountdown } from "../../hooks/useCountdown";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 export default function Login() {
     const { login } = useAuth();
@@ -12,7 +13,8 @@ export default function Login() {
     const [submitting, setSubmitting] = useState(false);
     const [password, setPassword] = useState("");
     const [cooldown, setCooldown] = useCountdown();
-
+    useDocumentTitle("Login");
+    
     async function handleSubmit(event) {
         event.preventDefault();
         const form = new FormData(event.currentTarget);

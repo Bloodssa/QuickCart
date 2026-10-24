@@ -5,8 +5,11 @@ import CategoryGrid from "../components/home/CategoryGrid"
 import PromoBanner from "../components/home/PromoBanner";
 import CollectionTiles from "../components/home/CollectionTiles";
 import ProductShelf from "../components/products/ProductShelf";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const HomePage = () => {
+    useDocumentTitle("Home");
+    
     return (
         <HomeLayout>
             <HeroSlider />
