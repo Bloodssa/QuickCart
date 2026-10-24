@@ -5,6 +5,7 @@ import { getErrorMessage } from "../../api/client";
 import { useDebouncedValue } from "../../hooks/useDebounce";
 import { formatPrice } from "../../lib/format";
 import { useDeleteProduct, useProducts } from "../../queries/products";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const PAGE_SIZE = 10;
 
@@ -22,6 +23,7 @@ export default function Products() {
     const [searchInput, setSearchInput] = useState("");
     const search = useDebouncedValue(searchInput.trim(), 400);
     const [page, setPage] = useState(1);
+    useDocumentTitle("Products");
 
     const [lastSearch, setLastSearch] = useState(search);
     if (search !== lastSearch) {

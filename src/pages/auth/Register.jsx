@@ -6,6 +6,7 @@ import FormField from "../../components/form/FormField";
 import { useCountdown } from "../../hooks/useCountdown";
 import { getErrorMessage, extractFieldErrors, getRetryAfter } from "../../api/client";
 import { registerUser } from "../../api/auth";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -15,6 +16,8 @@ export default function Register() {
     const [fieldErorrs, setFieldErrors] = useState({});
     const [cooldown, setCooldown] = useCountdown();
 
+    useDocumentTitle("Register");
+    
     function clearFieldErrors(event) {
         const { name } = event.target;
         setFieldErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));

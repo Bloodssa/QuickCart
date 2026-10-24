@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { UserRound, Menu, X, CircleUserRound, ArrowLeft } from "lucide-react";
 import SearchInput from "./SearchInput";
@@ -45,6 +45,7 @@ const Header = ({ subhead }) => {
     const isLoggedIn = status === "authenticated" && Boolean(user);
     const navigate = useNavigate();
     const location = useLocation();
+    const profileRef = useRef(null);
 
     const activePath = getActivePath(location.pathname, location.search);
     const isLinkActive = (path) => path === activePath;
@@ -71,6 +72,30 @@ const Header = ({ subhead }) => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedTerm]);
+
+    useEffect(() => {
+        if (!isOpenProfile) return; // only listen while the menu is open
+
+        function handlePointerDown(e) {
+            // the click is outside if the wrapper exists and doesn't contain what was clicked
+            if (profileRef.current && !profileRef.current.contains(e.target)) {
+                setProfileOpen(false);
+            }
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === "Escape") setProfileOpen(false);
+        }
+
+        document.addEventListener("pointerdown", handlePointerDown);
+        document.addEventListener("keydown", handleKeyDown);
+
+        // remove the listeners when the menu closes or the component unmounts
+        return () => {
+            document.removeEventListener("pointerdown", handlePointerDown);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isOpenProfile]);
 
     const handleSearch = (value) => {
         const term = value.trim();
@@ -127,7 +152,7 @@ const Header = ({ subhead }) => {
                         <CartLink />
 
                         {isLoggedIn && (
-                            <div className="relative">
+                            <div className="relative" ref={profileRef}>
                                 <button
                                     type="button"
                                     onClick={() => setProfileOpen(!isOpenProfile)}
@@ -147,7 +172,7 @@ const Header = ({ subhead }) => {
 
                                         <div className="p-2">
                                             <Link
-                                                to="/me"
+                                                to="/profile"
                                                 onClick={() => setProfileOpen(false)}
                                                 className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-gray-100"
                                             >
@@ -195,28 +220,28 @@ const Header = ({ subhead }) => {
                             label="Search products"
                         />
 
-                        {subhead && (
-                            <nav className="flex flex-col space-y-2 pt-2 border-t border-gray-300 font-medium text-neutral-900">
-                                {navLinks.map(link => (
-                                    <NavLink
-                                        key={link.path}
-                                        to={link.path}
-                                        end
-                                        onClick={() => setMenuOpen(!isMenuOpen)}
-                                        className={
-                                            isLinkActive(link.path)
-                                                ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"
-                                                : "py-1 text-neutral-700 hover:text-accent-300 transition-colors"
-                                        }
-                                    >
-                                        {link.name}
-                                    </NavLink>
-                                ))}
-                            </nav>
-                        )}
+
+                        <nav className="flex flex-col space-y-2 pt-2 border-t border-gray-300 font-medium text-neutral-900">
+                            {navLinks.map(link => (
+                                <NavLink
+                                    key={link.path}
+                                    to={link.path}
+                                    end
+                                    onClick={() => setMenuOpen(!isMenuOpen)}
+                                    className={
+                                        isLinkActive(link.path)
+                                            ? "py-1 font-bold text-accent-300 border-b-2 border-accent-300 -mb-px transition-colors"
+                                            : "py-1 text-neutral-700 hover:text-accent-300 transition-colors"
+                                    }
+                                >
+                                    {link.name}
+                                </NavLink>
+                            ))}
+                        </nav>
+
 
                         {!isLoading && (
-                            <Link to={isLoggedIn ? "/me" : "/login"} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-gray-300 font-semibold text-sm hover:bg-accent-100 hover:text-white transition-colors">
+                            <Link to={isLoggedIn ? "/profile" : "/login"} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-gray-300 font-semibold text-sm hover:bg-accent-100 hover:text-white transition-colors">
                                 <UserRound className="w-5 h-5" />
                                 <span>{isLoggedIn ? "Profile" : "Log In"}</span>
                             </Link>

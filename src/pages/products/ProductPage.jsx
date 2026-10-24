@@ -6,10 +6,12 @@ import Skeleton from "../../components/ui/Skeleton";
 import HomeLayout from "../../layouts/HomeLayout";
 import { useProduct } from "../../queries/products";
 import RelatedProducts from "../../components/products/RelatedProducts";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 export default function ProductPage() {
     const { id } = useParams();
     const { data: product, isPending, error } = useProduct(id);
+    useDocumentTitle(product?.name ?? "Product");
 
     if (isPending) {
         return (

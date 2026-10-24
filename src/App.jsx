@@ -45,7 +45,7 @@ function App() {
 
           {/* Auth required */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/me" element={<Profile />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
           {/* Admin role required */}
