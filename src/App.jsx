@@ -22,6 +22,7 @@ import Reports from "./pages/admin/Reports";
 import AdminProfile from "./pages/admin/Profile";
 import Checkout from "./pages/customer/Checkout";
 import OrderDetails from "./pages/customer/OrderDetails";
+import AdminOrderDetails from "./pages/admin/OrderDetails";
 
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -56,7 +57,10 @@ function App() {
           <Route path="/admin" element={<AdminRoute />}>
             <Route element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
+
               <Route path="orders" element={<Orders />} />
+              <Route path="orders/:id" element={<AdminOrderDetails />} />
+
               <Route path="deals" element={<Deals />} />
               <Route path="products" element={<AdminProductPage />} />
               <Route path="products/new" element={<AdminProductFormPage />} />
