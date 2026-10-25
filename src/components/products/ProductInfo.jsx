@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage } from "../../api/client";
 import { useAuth } from "../../hooks/useAuth";
@@ -25,26 +25,54 @@ export default function ProductInfo({
     const location = useLocation();
     const addToCart = useAddToCart();
     const [quantity, setQuantity] = useState(1);
+    const [pending, setPending] = useState(null); // cart or buy
 
     const inStock = stockQuantity > 0;
     const lowStock = inStock && stockQuantity <= 10;
     const maxQuantity = Math.min(stockQuantity, MAX_PER_ITEM);
     const safeQuantity = Math.min(Math.max(quantity, 1), Math.max(maxQuantity, 1));
 
-    function handleAddToCart() {
-        if (status === "loading") return;
+    function requireLogin() {
+        if (status === "loading") return false;
 
         if (status !== "authenticated") {
-            toast.info("Please log in to add items to your cart.");
+            toast.info("Please log in to continue.");
             navigate("/login", { state: { from: location } });
-            return;
+            return false;
         }
 
+        return true;
+    }
+
+    function handleAddToCart() {
+        if (!requireLogin()) return;
+
+        setPending("cart");
         addToCart.mutate(
             { productId: id, quantity: safeQuantity },
             {
                 onSuccess: () => toast.success(`${name} added to cart`),
                 onError: (err) => toast.error(getErrorMessage(err)),
+                onSettled: () => setPending(null),
+            },
+        );
+    }
+
+    function handleOrderNow() {
+        if (!requireLogin()) return;
+
+        setPending("buy");
+        addToCart.mutate(
+            { productId: id, quantity: safeQuantity },
+            {
+                onSuccess: (result) => {
+                    const cartItem = result?.items?.find((item) => item.productId === id) ?? result;
+
+                    if (cartItem?.id) navigate(`/checkout?items=${cartItem.id}`);
+                    else navigate("/cart"); // fallback: the user click the item there
+                },
+                onError: (err) => toast.error(getErrorMessage(err)),
+                onSettled: () => setPending(null),
             },
         );
     }
@@ -60,9 +88,7 @@ export default function ProductInfo({
                 {formatPrice(price)}
             </p>
             <p role="status" className={`mt-2 text-sm ${inStock && !lowStock ? "text-green-600" : "font-semibold text-red-500"}`}>
-                {!inStock? "Out of stock" : lowStock
-                        ? `Only ${stockQuantity} left. Don't miss it`
-                        : `In stock (${stockQuantity} available)`}
+                {!inStock ? "Out of stock" : lowStock ? `Only ${stockQuantity} left. Don't miss it` : `In stock (${stockQuantity} available)`}
             </p>
 
             <div className="mt-6 border-t border-gray-200 pt-6">
@@ -81,22 +107,21 @@ export default function ProductInfo({
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <button
                         type="button"
+                        onClick={handleOrderNow}
+                        disabled={!inStock || addToCart.isPending}
+                        className={`flex h-11 items-center justify-center gap-2 rounded-md border border-gray-300 px-6 text-sm font-semibold text-heading transition-colors hover:border-accent-100 hover:bg-accent-50 hover:text-accent-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-300 disabled:hover:bg-transparent disabled:hover:text-heading ${focusRing}`}
+                    >
+                        <Zap size={16} aria-hidden="true" />
+                        {pending === "buy" ? "Please wait…" : "Order now"}
+                    </button>
+                    <button
+                        type="button"
                         onClick={handleAddToCart}
                         disabled={!inStock || addToCart.isPending}
-                        aria-busy={addToCart.isPending}
                         className={`flex h-11 items-center justify-center gap-2 rounded-md bg-accent-100 px-6 text-sm font-semibold text-white transition-colors hover:bg-accent-hover active:bg-accent-200 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 ${focusRing}`}
                     >
                         <ShoppingCart size={16} aria-hidden="true" />
-                        {addToCart.isPending ? "Adding…" : "Add to cart"}
-                    </button>
-
-                    {/* TODO: enable when the order endpoint implemented */}
-                    <button
-                        type="button"
-                        disabled
-                        className="h-11 rounded-md border border-gray-300 px-6 text-sm font-semibold text-heading opacity-60 disabled:cursor-not-allowed"
-                    >
-                        Order now
+                        {pending === "cart" ? "Adding…" : "Add to cart"}
                     </button>
                 </div>
             </div>

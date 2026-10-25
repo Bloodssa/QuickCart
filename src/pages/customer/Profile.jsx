@@ -35,7 +35,7 @@ const Home = () => {
                         {activeTab === "details" && <AccountDetails user={user} label="Account Details" onNavigate={changeTab} />}
                         {activeTab === "address" && <AddressSection label="Address" />}
                         {activeTab === "on-ship" && (
-                            <OrdersSection label="On Ship Orders" emptyMessage="You have no orders on the way." />
+                            <OrdersSection label="On Ship Orders" status="Processing" emptyMessage="You have no orders on the way." />
                         )}
                         {activeTab === "history" && (
                             <OrdersSection label="Order History" emptyMessage="You have not placed any orders yet." />
