@@ -20,6 +20,8 @@ import Inventory from "./pages/admin/Inventory";
 import Customers from "./pages/admin/Customers";
 import Reports from "./pages/admin/Reports";
 import AdminProfile from "./pages/admin/Profile";
+import Checkout from "./pages/customer/Checkout";
+import OrderDetails from "./pages/customer/OrderDetails";
 
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -46,6 +48,8 @@ function App() {
           {/* Auth required */}
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<Profile />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/orders/:id" element={<OrderDetails />} />
           </Route>
 
           {/* Admin role required */}
