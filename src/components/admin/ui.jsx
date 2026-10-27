@@ -53,13 +53,13 @@ export function Pill({ tone = "gray", children }) {
     return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${TONES[tone]}`}>{children}</span>;
 }
 
-// export const ORDER_STATUS_TONE = {
-//     Pending: "yellow",
-//     Confirmed: "blue",
-//     Processing: "blue",
-//     Completed: "green",
-//     Cancelled: "red",
-// };
+export const ORDER_STATUS_TONE = {
+    Pending: "yellow",
+    Confirmed: "blue",
+    Processing: "blue",
+    Completed: "green",
+    Cancelled: "red",
+};
 
 export function EmptyState({ title, message }) {
     return (
