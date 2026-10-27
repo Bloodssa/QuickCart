@@ -1,7 +1,7 @@
 // MOCK
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminApi } from "./admin";
+import { adminApi } from "../api/admin";
 
 export const adminKeys = {
     all: ["admin"],
