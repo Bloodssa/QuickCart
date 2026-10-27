@@ -1,5 +1,7 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getAdminOrders, getAdminOrder } from "../api/adminOrders";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAdminOrders, getAdminOrder, updateAdminOrderStatus  } from "../api/adminOrders";
+import { toast } from "sonner";
+import { getErrorMessage } from "../api/client";
 
 export const adminOrderKeys = {
     all: ["admin-orders"],
@@ -21,3 +23,32 @@ export const useAdminOrder = (id) =>
         queryFn: ({ signal }) => getAdminOrder(id, signal),
         enabled: Boolean(id),
     });
+
+export const useUpdateAdminOrderStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status, paymentStatus }) =>
+      updateAdminOrderStatus(id, status, paymentStatus),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: adminOrderKeys.detail(variables.id),
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: adminOrderKeys.lists(),
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["orders"],
+      });
+
+      toast.success("Order updated successfully.");
+    },
+
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+};
