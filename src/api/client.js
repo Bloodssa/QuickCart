@@ -70,7 +70,7 @@ api.interceptors.response.use(
 
 export function getErrorMessage(
     error,
-    fallback = "Something wnet wrong. Please try again later."
+    fallback = "Something went wrong. Please try again later."
 )
 {
     if (error?.code === "ERR_NETWORK") return "Cannot reach server. Check your connection.";
