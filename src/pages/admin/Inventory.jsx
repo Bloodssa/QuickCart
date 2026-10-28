@@ -102,7 +102,9 @@ export default function Inventory() {
                             <tbody>
                                 {rows.map((p) => (
                                     <tr key={p.id}>
-                                        <td className={`${tdCls} font-semibold`}>{p.name}</td>
+                                        <td className={`${tdCls} font-semibold`}>
+                                            <span className="line-clamp-1" title={p.name}>{p.name}</span>
+                                        </td>
                                         <td className={`${tdCls} text-gray-600`}>{p.categoryName}</td>
                                         <td className={`${tdCls} font-bold`}>{p.stock}</td>
                                         <td className={tdCls}>{stockPill(p.stock)}</td>

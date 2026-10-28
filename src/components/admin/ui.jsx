@@ -41,18 +41,17 @@ export function StatCard({ label, value, hint, loading }) {
 }
 
 const TONES = {
-    yellow: "bg-yellow-100 text-yellow-800",
-    blue: "bg-blue-100 text-blue-800",
-    green: "bg-green-100 text-green-800",
-    red: "bg-red-100 text-red-800",
-    orange: "bg-accent-50 text-accent-300",
-    gray: "bg-gray-100 text-gray-700",
+    yellow: "bg-yellow-100 text-yellow-800 border border-yellow-800",
+    blue: "bg-blue-100 text-blue-800 border border-blue-800",
+    green: "bg-green-100 text-green-800 border border-green-800",
+    red: "bg-red-100 text-red-800 border border-red-800",
+    orange: "bg-accent-50 text-accent-300 border border-accent-100",
+    gray: "bg-gray-100 text-gray-700 border border-gray-800",
 };
 
 export function Pill({ tone = "gray", children }) {
-    return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${TONES[tone]}`}>{children}</span>;
+    return <span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold ${TONES[tone]}`}>{children}</span>;
 }
-
 export const ORDER_STATUS_TONE = {
     Pending: "yellow",
     Confirmed: "blue",
@@ -113,7 +112,7 @@ export function Pagination({ page, totalPages, onChange }) {
 
 export function Th({ children, align = "left" }) {
     return (
-        <th scope="col" className={`border-b border-gray-300 bg-gray-50 px-4 py-3 text-xs font-bold text-gray-600 ${align === "right" ? "text-right" : "text-left"}`}>
+        <th scope="col" className={`whitespace-nowrap border-b border-gray-300 bg-gray-50 px-4 py-3 text-xs font-bold text-gray-600 ${align === "right" ? "text-right" : "text-left"}`}>
             {children}
         </th>
     );
