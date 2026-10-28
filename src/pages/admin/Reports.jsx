@@ -49,9 +49,6 @@ export default function Reports() {
 
     return (
         <div className="flex flex-col gap-5">
-            <div className="w-full h-15 bg-accent-100 rounded-md flex justify-center items-center text-white font-medium">
-                NOTE: MOCK DATA
-            </div>
             <PageHeader title="Sales Reports" subtitle="Basic transaction records for a date range."
                 action={<button type="button" className={secondaryBtn} disabled={rows.length === 0} onClick={() => downloadCsv(rows)}>Export this page (CSV)</button>} />
 

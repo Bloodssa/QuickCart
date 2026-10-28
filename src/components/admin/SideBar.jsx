@@ -9,7 +9,7 @@ import {
     Layers,
     Boxes,
     Users,
-    // Percent,
+    Percent,
     TrendingUp,
     UserRound,
 } from "lucide-react";
@@ -21,7 +21,7 @@ const sidebarSections = [
         items: [
             { name: "Dashboard", path: "/admin", icon: LayoutDashboard, end: true },
             { name: "Orders", path: "/admin/orders", icon: ShoppingBag },
-            // { name: "Deals & Promotions", path: "/admin/deals", icon: Percent },
+            { name: "Deals & Promotions", path: "/admin/deals", icon: Percent },
         ],
     },
     {

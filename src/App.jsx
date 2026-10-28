@@ -14,7 +14,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import AdminProductPage from "./pages/admin/Products";
 import AdminProductFormPage from "./pages/admin/AdminProductForm";
 import Orders from "./pages/admin/Orders";
-// import Deals from "./pages/admin/Deals";
+import Deals from "./pages/admin/Deals";
 import Category from "./pages/admin/Category";
 import Inventory from "./pages/admin/Inventory";
 import Customers from "./pages/admin/Customers";
@@ -61,7 +61,7 @@ function App() {
               <Route path="orders" element={<Orders />} />
               <Route path="orders/:id" element={<AdminOrderDetails />} />
 
-              {/* <Route path="deals" element={<Deals />} /> */}
+              <Route path="deals" element={<Deals />} />
               <Route path="products" element={<AdminProductPage />} />
               <Route path="products/new" element={<AdminProductFormPage />} />
               <Route path="products/:id/edit" element={<AdminProductFormPage />} />

@@ -45,8 +45,11 @@ export default function ProductInfo({
     }
 
     function handleAddToCart() {
-        if (!requireLogin()) return;
-
+        if (!requireLogin()) {
+             navigate("/login");
+            return;
+        }
+        
         setPending("cart");
         addToCart.mutate(
             { productId: id, quantity: safeQuantity },

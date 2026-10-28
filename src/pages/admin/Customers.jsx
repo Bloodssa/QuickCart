@@ -55,9 +55,6 @@ export default function Customers() {
 
     return (
         <div className="flex flex-col gap-5">
-            <div className="w-full h-15 bg-accent-100 rounded-md flex justify-center items-center text-white font-medium">
-                NOTE: MOCK DATA
-            </div>
             <PageHeader title="Customers" subtitle="Look up a customer and their order history. Read-only." />
             <div className="flex flex-wrap items-start gap-4">
                 <Card className="min-w-0 flex-[2_1_520px] overflow-hidden">

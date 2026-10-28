@@ -6,8 +6,11 @@ import {
 } from "@tanstack/react-query";
 import {
     createProduct, deleteProduct, deleteProductImage, getProductById,
-    getProducts, setDefaultProductImage, updateProduct,
+    getProducts, setDefaultProductImage, updateProduct, adjustProductStock,
+    getStockSummary
 } from "../api/products";
+import { toast } from "sonner";
+import { getErrorMessage } from "../api/client";
 
 export const productKeys = {
     all: ["products"],
@@ -60,6 +63,24 @@ function useImageMutation(mutationFn) {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
     });
 }
+
+export function useAdjustStock() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: adjustProductStock,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: productKeys.all }); // product cards show stock too
+            toast.success("Stock updated");
+        },
+        onError: (e) => toast.error(getErrorMessage(e)),
+    });
+}
+
+export const useStockSummary = () =>
+    useQuery({
+        queryKey: [...productKeys.all, "stock-summary"],
+        queryFn: ({ signal }) => getStockSummary(signal),
+    });
 
 export const useDeleteProductImage = () => useImageMutation(({ productId, imageId }) => deleteProductImage(productId, imageId));
 export const useSetDefaultImage = () => useImageMutation(({ productId, imageId }) => setDefaultProductImage(productId, imageId));

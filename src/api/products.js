@@ -49,6 +49,16 @@ export const updateProduct = async (id, values) => {
     return data;
 };
 
+export const adjustProductStock = async ({ id, delta }) => {
+    const { data } = await api.patch(`/products/${id}/stock`, { delta });
+    return data;
+};
+
+export const getStockSummary = async (signal) => {
+    const { data } = await api.get("/products/stock-summary", { signal });
+    return data;
+};
+
 export const deleteProduct = (id) => api.delete(`/products/${id}`);
 export const deleteProductImage = (productId, imageId) => api.delete(`/products/${productId}/images/${imageId}`);
 export const setDefaultProductImage = (productId, imageId) => api.put(`/products/${productId}/images/${imageId}/default`);

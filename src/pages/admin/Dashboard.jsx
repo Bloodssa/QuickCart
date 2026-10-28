@@ -35,9 +35,6 @@ export default function Dashboard() {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="w-full h-15 bg-accent-100 rounded-md flex justify-center items-center text-white font-medium">
-                NOTE: MOCK DATA
-            </div>
             <PageHeader
                 title="Dashboard"
                 subtitle="What needs your attention today."
