@@ -1,9 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { X, LocateFixed } from "lucide-react";
+import { getPosition, reverseGeocode } from "../../api/geocode";
 import { toast } from "sonner";
 import { getErrorMessage, extractFieldErrors } from "../../api/client";
 import { useCreateAddress, useUpdateAddress } from "../../queries/addresses";
 import FormField from "../form/FormField";
+import SelectField from "../form/SelectField";
+import { allCitiesQuery, barangaysQuery, provincesQuery, useAllCities, useBarangays, useProvinces } from "../../queries/psgc";
+import { useQueryClient } from "@tanstack/react-query";
+import { findMatch } from "../../lib/addressMatch";
 
 const initialValues = (address) => ({
     recipientName: address?.recipientName ?? "",
@@ -16,7 +21,6 @@ const initialValues = (address) => ({
     isDefault: address?.isDefault ?? false,
 });
 
-// client-side checks
 function validate(v) {
     const errors = {};
 
@@ -33,6 +37,10 @@ function validate(v) {
     return errors;
 }
 
+const findCode = (list, name) =>
+    name ? (list?.find((o) => o.name.toLowerCase() === name.toLowerCase())?.code ?? "") : "";
+const findName = (list, code) => list?.find((o) => o.code === code)?.name ?? "";
+
 export default function AddressModal({ address, onClose }) {
     const dialogRef = useRef(null);
     const isEdit = Boolean(address);
@@ -40,6 +48,157 @@ export default function AddressModal({ address, onClose }) {
     const [values, setValues] = useState(() => initialValues(address));
     const [errors, setErrors] = useState({});
     const [formError, setFormError] = useState("");
+
+    const queryClient = useQueryClient();
+    const [locating, setLocating] = useState(false);
+
+    async function fillFromLocation() {
+        setLocating(true);
+        setFormError("");
+
+        try {
+            const { latitude, longitude, accuracy } = await getPosition();
+            const a = await reverseGeocode(latitude, longitude);
+            console.log({ latitude, longitude, accuracy }, a);
+
+            const provinceNames = [a.province, a.state_district, a.state];
+            const cityNames = [a.city, a.town, a.municipality, a.city_district];
+            const barangayNames = [a.suburb, a.neighbourhood, a.quarter, a.village, a.hamlet];
+            const street = [a.house_number, a.road].filter(Boolean).join(" ");
+            const postalCode = String(a.postcode ?? "").match(/\b\d{4}\b/)?.[0] ?? "";
+
+            let found = { provinceCode: "", province: "", cityCode: "", city: "", barangayCode: "", barangay: "" };
+
+            try {
+                const [provinceList, cityList] = await Promise.all([
+                    queryClient.fetchQuery(provincesQuery),
+                    queryClient.fetchQuery(allCitiesQuery),
+                ]);
+
+                // use the province as a hint to pick the right city when names repeat ("San Jose")
+                const provinceGuess = findMatch(provinceList, provinceNames);
+                const inProvince = provinceGuess ? cityList.filter((c) => c.provinceCode === provinceGuess.code) : [];
+                const city = findMatch(inProvince, cityNames) ?? findMatch(cityList, cityNames);
+
+                // the city decides the final province (this also handles Metro Manila)
+                const province = city ? provinceList.find((p) => p.code === city.provinceCode) : provinceGuess;
+
+                let barangay;
+                if (city) {
+                    const barangayList = await queryClient.fetchQuery(barangaysQuery(city.code));
+                    barangay = findMatch(barangayList, barangayNames);
+                }
+
+                found = {
+                    provinceCode: province?.code ?? "", province: province?.name ?? "",
+                    cityCode: city?.code ?? "", city: city?.name ?? "",
+                    barangayCode: barangay?.code ?? "", barangay: barangay?.name ?? "",
+                };
+            } catch {
+                // PSGC is down: fall back to the raw names so the text inputs still fill
+                found.province = provinceNames.find(Boolean) ?? "";
+                found.city = cityNames.find(Boolean) ?? "";
+                found.barangay = barangayNames.find(Boolean) ?? "";
+            }
+
+            setValues((c) => ({
+                ...c,
+                ...found,
+                addressLine: street || c.addressLine,
+                postalCode: postalCode || c.postalCode,
+            }));
+            setErrors({});
+
+            toast.success(
+                found.city && found.barangay
+                    ? "Address filled from your location. Please check it."
+                    : "Partly filled from your location. Please complete the rest."
+            );
+        } catch (err) {
+            setFormError(err.message);
+        } finally {
+            setLocating(false);
+        }
+    }
+
+    // location datas from thrid party psgc
+    const provinces = useProvinces();
+    const allCities = useAllCities();
+
+    const provinceCode = values.provinceCode || findCode(provinces.data, values.province);
+
+    //province chosen -> only its cities. No province -> every city, labelled with its province.
+    const cityOptions = useMemo(() => {
+        const list = allCities.data ?? [];
+        const source = provinceCode ? list.filter((c) => c.provinceCode === provinceCode) : list;
+
+        return source.map((c) => {
+            if (provinceCode) return { code: c.code, name: c.name };
+            const provinceName = findName(provinces.data, c.provinceCode);
+            return { code: c.code, name: provinceName ? `${c.name}, ${provinceName}` : c.name };
+        });
+    }, [allCities.data, provinces.data, provinceCode]);
+
+    const cityCode =
+        values.cityCode ||
+        (values.city
+            ? (allCities.data?.find(
+                (c) =>
+                    c.name.toLowerCase() === values.city.toLowerCase() &&
+                    (!provinceCode || c.provinceCode === provinceCode)
+            )?.code ?? "")
+            : "");
+
+    const barangays = useBarangays(cityCode);
+    const barangayCode = values.barangayCode || findCode(barangays.data, values.barangay);
+
+    // fall back to plain text inputs if the PSGC API is down
+    const typeProvince = provinces.isError;
+    const typeCity = allCities.isError;
+    const typeBarangay = typeCity || barangays.isError;
+
+    function pickProvince(e) {
+        const code = e.target.value;
+
+        setValues((c) => {
+            // keep the chosen city only if it belongs to the new province
+            const currentCity = allCities.data?.find((x) => x.code === cityCode);
+            const keepCity = currentCity && currentCity.provinceCode === code;
+
+            return {
+                ...c,
+                provinceCode: code,
+                province: findName(provinces.data, code),
+                cityCode: keepCity ? currentCity.code : "",
+                city: keepCity ? currentCity.name : "",
+                barangayCode: keepCity ? c.barangayCode : "",
+                barangay: keepCity ? c.barangay : "",
+            };
+        });
+        setErrors((c) => ({ ...c, province: undefined, city: undefined, barangay: undefined }));
+    }
+
+    function pickCity(e) {
+        const code = e.target.value;
+        const city = allCities.data?.find((x) => x.code === code);
+
+        setValues((c) => ({
+            ...c,
+            cityCode: code,
+            city: city?.name ?? "",
+            provinceCode: city?.provinceCode || c.provinceCode,
+            province: findName(provinces.data, city?.provinceCode) || c.province,
+            barangayCode: "",
+            barangay: "",
+        }));
+        setErrors((c) => ({ ...c, city: undefined, province: undefined, barangay: undefined }));
+    }
+
+    function pickBarangay(e) {
+        const code = e.target.value;
+        setValues((c) => ({ ...c, barangayCode: code, barangay: findName(barangays.data, code) }));
+        setErrors((c) => ({ ...c, barangay: undefined }));
+    }
 
     const createMutation = useCreateAddress();
     const updateMutation = useUpdateAddress();
@@ -54,14 +213,16 @@ export default function AddressModal({ address, onClose }) {
     function handleChange(e) {
         const { name, value } = e.target;
         setValues((current) => ({ ...current, [name]: value }));
-        setErrors((current) => ({ ...current, [name]: undefined })); // clear the error fields while typing
+        setErrors((current) => ({ ...current, [name]: undefined }));
     }
 
     function handleSubmit(e) {
         e.preventDefault();
 
+        // eslint-disable-next-line no-unused-vars
+        const { provinceCode: _p, cityCode: _c, barangayCode: _b, ...fields } = values;
         const payload = Object.fromEntries(
-            Object.entries(values).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value])
+            Object.entries(fields).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value])
         );
 
         const found = validate(payload);
@@ -75,11 +236,10 @@ export default function AddressModal({ address, onClose }) {
                 onClose();
             },
             onError: (err) => {
-                const fields = extractFieldErrors(err);
-
-                if (Object.keys(fields).length > 0) setErrors(fields); // show errors under each field
-                else setFormError(getErrorMessage(err)); // one message at the top if unknown error
-            }
+                const fieldErrors = extractFieldErrors(err);
+                if (Object.keys(fieldErrors).length > 0) setErrors(fieldErrors);
+                else setFormError(getErrorMessage(err));
+            },
         };
 
         if (isEdit) updateMutation.mutate({ id: address.id, payload }, options);
@@ -91,12 +251,12 @@ export default function AddressModal({ address, onClose }) {
             ref={dialogRef}
             onClose={onClose}
             onClick={(e) => {
-                if (e.target === e.currentTarget) onClose(); // click on the dark backdrop
+                if (e.target === e.currentTarget) onClose();
             }}
             aria-labelledby="address-modal-title"
-            className="m-auto w-[calc(100%-1rem)] max-w-2xl rounded-md border border-gray-300 bg-white p-0 text-neutral-900 backdrop:bg-black/40"
+            className="m-auto w-[calc(100%-1rem)] max-w-2xl rounded-md border border-gray-300 bg-white p-0 text-neutral-900 backdrop:bg-black/40 open:flex open:max-h-[92dvh] open:flex-col"
         >
-            <div className="flex items-center justify-between border-b border-gray-300 px-5 py-4">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-300 px-5 py-4">
                 <h2 id="address-modal-title" className="text-lg font-bold text-neutral-900">
                     {isEdit ? "Edit address" : "Add new address"}
                 </h2>
@@ -110,14 +270,22 @@ export default function AddressModal({ address, onClose }) {
                 </button>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate>
-                <div className="max-h-[65vh] space-y-4 overflow-y-auto px-5 md:px-12 py-5">
+            <form onSubmit={handleSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5 md:px-12">
                     {formError && (
                         <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
                             {formError}
                         </p>
                     )}
-
+                    <button
+                        type="button"
+                        onClick={fillFromLocation}
+                        disabled={locating}
+                        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-accent-300 bg-accent-50 px-4 text-sm font-semibold text-accent-300 transition-colors hover:bg-accent-50/70 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                    >
+                        <LocateFixed size={16} aria-hidden="true" />
+                        {locating ? "Finding your location…" : "Use my current location"}
+                    </button>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                             label="Recipient name"
@@ -142,47 +310,86 @@ export default function AddressModal({ address, onClose }) {
                         />
                     </div>
 
-                    <FormField
-                        label="Street address"
-                        id="addressLine"
-                        value={values.addressLine}
-                        onChange={handleChange}
-                        error={errors.addressLine}
-                        placeholder="House no., street, building"
-                        autoComplete="address-line1"
-                        aria-invalid={Boolean(errors.addressLine)}
-                    />
-
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <FormField
-                            label="Barangay"
-                            id="barangay"
-                            value={values.barangay}
-                            onChange={handleChange}
-                            error={errors.barangay}
-                            aria-invalid={Boolean(errors.barangay)}
-                            placeholder="Barangay 1234 Street"
-                        />
-                        <FormField
-                            label="City / Municipality"
-                            id="city"
-                            value={values.city}
-                            onChange={handleChange}
-                            error={errors.city}
-                            autoComplete="address-level2"
-                            aria-invalid={Boolean(errors.city)}
-                            placeholder="Cebu City"
-                        />
-                        <FormField
-                            label="Province"
-                            id="province"
-                            value={values.province}
-                            onChange={handleChange}
-                            error={errors.province}
-                            autoComplete="address-level1"
-                            aria-invalid={Boolean(errors.province)}
-                            placeholder="Cebu"
-                        />
+                        {/* Province */}
+                        {typeProvince ? (
+                            <FormField
+                                label="Province"
+                                id="province"
+                                value={values.province}
+                                onChange={handleChange}
+                                error={errors.province}
+                                autoComplete="address-level1"
+                                aria-invalid={Boolean(errors.province)}
+                                placeholder="Cebu"
+                            />
+                        ) : (
+                            <SelectField
+                                label="Province"
+                                id="province"
+                                value={provinceCode}
+                                onChange={pickProvince}
+                                options={provinces.data}
+                                loading={provinces.isPending}
+                                placeholder="Select province"
+                                error={errors.province}
+                            />
+                        )}
+
+                        {/* City */}
+                        {typeCity ? (
+                            <FormField
+                                label="City / Municipality"
+                                id="city"
+                                value={values.city}
+                                onChange={handleChange}
+                                error={errors.city}
+                                autoComplete="address-level2"
+                                aria-invalid={Boolean(errors.city)}
+                                placeholder="Cebu City"
+                            />
+                        ) : (
+                            <SelectField
+                                label="City / Municipality"
+                                id="city"
+                                value={cityCode}
+                                onChange={pickCity}
+                                options={cityOptions}
+                                loading={allCities.isPending}
+                                placeholder="Select city / municipality"
+                                error={errors.city}
+                            />
+                        )}
+
+                        {/* Barangay */}
+                        {typeBarangay ? (
+                            <FormField
+                                label="Barangay"
+                                id="barangay"
+                                value={values.barangay}
+                                onChange={handleChange}
+                                error={errors.barangay}
+                                aria-invalid={Boolean(errors.barangay)}
+                                placeholder="Barangay 1234"
+                            />
+                        ) : (
+                            <SelectField
+                                label="Barangay"
+                                id="barangay"
+                                value={barangayCode}
+                                onChange={pickBarangay}
+                                options={barangays.data}
+                                loading={barangays.isFetching}
+                                disabled={!cityCode}
+                                placeholder={
+                                    !cityCode ? "Select city first"
+                                        : barangays.isFetching ? "Loading barangays…"
+                                            : "Select barangay"
+                                }
+                                error={errors.barangay}
+                            />
+                        )}
+
                         <FormField
                             label="Postal code"
                             id="postalCode"
@@ -197,6 +404,17 @@ export default function AddressModal({ address, onClose }) {
                         />
                     </div>
 
+                    <FormField
+                        label="Street address"
+                        id="addressLine"
+                        value={values.addressLine}
+                        onChange={handleChange}
+                        error={errors.addressLine}
+                        placeholder="House no., street, building"
+                        autoComplete="address-line1"
+                        aria-invalid={Boolean(errors.addressLine)}
+                    />
+
                     <label className="flex items-center gap-2 text-sm text-neutral-900">
                         <input
                             type="checkbox"
@@ -208,7 +426,7 @@ export default function AddressModal({ address, onClose }) {
                     </label>
                 </div>
 
-                <div className="flex justify-end gap-3 border-t border-gray-300 px-5 py-4">
+                <div className="flex shrink-0 justify-end gap-3 border-t border-gray-300 px-5 py-4">
                     <button
                         type="button"
                         onClick={onClose}
